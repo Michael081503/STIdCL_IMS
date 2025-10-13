@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Custom Website</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Font Awesome for professional icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+  <style>
+    nav a, nav button {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      color: inherit !important;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Top-right header (notifications + user bubble) */
+    .top-header {
+      position: fixed;
+      top: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 10px 20px;
+      z-index: 11000;
+    }
+
+    .top-header #user-avatar img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body style="
+  background: url('Assets/BG_Main.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: white;
+  margin: 0;
+  font-family: Arial, sans-serif;
+">
+
+  <div class="wrapper">
+
+    <!-- Side Navigation -->
+    <nav class="side-nav">
+      <!-- Logo -->
+      <a id="logo-link" href="#"><img src="Assets/Logo_STI.png" alt="Logo" class="logo" /></a>
+
+      <!-- Navigation Links -->
+      <ul>
+        <li style="display: none;">
+          <a href="#" id="home-link" class="active"><i class="fas fa-home"></i>Home</a>
+        </li>
+        <li id="inventory-link" style="display: none;">
+          <a href="#" id="inventory-link-a"><i class="fas fa-boxes"></i>Inventory</a>
+        </li>
+        <li id="rooms-link">
+          <a href="#" id="rooms-link-a"><i class="fas fa-door-open"></i>Rooms</a>
+        </li>
+        <li id="my-tickets-link" style="display: none;">
+          <a href="#" id="my-tickets-link-a"><i class="fas fa-ticket-alt"></i>Tickets</a>
+        </li>
+        <li id="tasks-link" style="display: none;">
+          <a href="#" id="tasks-link-a"><i class="fas fa-tasks"></i>Tasks</a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Top-right header (notifications + user) -->
+    <div class="top-header">
+      <!-- Notification Button -->
+      <div id="notification-wrapper" style="display:none; position: relative;">
+        <div id="notification-btn">
+          <i class="fas fa-bell"></i>
+          <span id="notification-count" class="notif-badge">0</span>
+        </div>
+        <div id="notification-dropdown">
+          <p class="notif-empty">No notifications</p>
+          <ul id="notification-list"></ul>
+        </div>
+      </div>
+
+      <!-- User Avatar -->
+      <div id="user-avatar" style="display:none;">
+        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Avatar">
+      </div>
+
+      <!-- Login Button -->
+      <a href="#" class="login-btn">Login</a>
+
+      <!-- Avatar Dropdown -->
+      <div id="avatar-dropdown">
+        <div id="user-role" style="padding: 10px; color: yellow; font-weight: bold; border-bottom: 1px solid rgba(238, 255, 0, 0.4); display: none;"></div>
+        <a href="#" id="profile-btn">Profile</a>
+        <a href="#" id="logout-btn">Logout</a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div id="main-content" style="font-size: 24px;">
+        <!-- Home page content loads here dynamically -->
+      </div>
+    </div>
+
+    <!-- Login/Register Modal -->
+    <div id="login-modal">
+      <h2>Login</h2>
+
+      <input type="text" id="first-name" placeholder="First Name" style="display:none;" />
+      <input type="text" id="last-name" placeholder="Last Name" style="display:none;" />
+
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Password" />
+      
+      <select id="role-select" style="width: 100%; padding: 8px; margin-bottom: 10px; display: none;">
+        <option value="User" selected>User</option>
+        <option value="Admin">Admin</option>
+        <option value="Maintenance">Maintenance</option>
+      </select>
+
+      <button id="login-btn">Login</button>
+      <button id="register-btn" style="display:none;">Register</button>
+
+      <div class="modal-footer">
+        <button id="close-login">Close</button>
+        <button id="toggle-register">Register</button>
+        <button id="toggle-login" style="display:none;">Login</button>
+      </div>
+
+      <p id="login-error"></p>
+    </div>
+
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+  <!-- External Script -->
+  <script src="script.js"></script>
+</body>
+</html>

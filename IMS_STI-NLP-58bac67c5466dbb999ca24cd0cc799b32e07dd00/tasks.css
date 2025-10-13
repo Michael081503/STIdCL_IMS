@@ -1,0 +1,257 @@
+/* ============================
+   GLOBAL LAYOUT
+   ============================ */
+.tasks-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: nowrap;
+  margin: 40px auto;
+  max-width: 1400px;
+  padding: 0 20px;
+}
+
+/* ============================
+   SHARED BOX DESIGN
+   ============================ */
+.tasks-box {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.tasks-left {
+  flex: 2;
+  min-width: 600px;
+}
+
+.tasks-right {
+  flex: 1;
+  min-width: 350px;
+}
+
+/* Reset any unexpected spacing */
+.tasks-box h2 {
+  margin: 0 0 10px 0;
+  padding: 0;
+  color: #2D3E50;
+  line-height: 1.2;
+}
+
+.tasks-subtitle {
+  color: #333;
+  margin: 4px 0 16px 0;
+  font-size: 0.95rem;
+}
+
+/* ============================
+   TABLE STYLING
+   ============================ */
+.tasks-table,
+.maintenance-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 0.9rem;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+}
+
+.tasks-table thead,
+.maintenance-table thead {
+  background: #2D3E50;
+  color: #fff;
+}
+
+.tasks-table th,
+.tasks-table td,
+.maintenance-table th,
+.maintenance-table td {
+  padding: 12px 14px;
+  text-align: left;
+  color: #000;
+  border: none;
+}
+
+.tasks-table tr:nth-child(even),
+.maintenance-table tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.tasks-table tr:hover td,
+.maintenance-table tr:hover td {
+  background: #eef2ff;
+}
+
+/* ============================
+   STATUS BADGES
+   ============================ */
+.status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff !important;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+.status-badge.pending { background-color: #f59e0b; }
+.status-badge.assigned { background-color: #2563eb; }
+.status-badge.in-progress { background-color: #f97316; }
+.status-badge.completed { background-color: #16a34a; }
+.status-badge.closed { background-color: #6b7280; }
+.status-badge.default { background-color: #9ca3af; }
+.status-badge.review { background-color: #eab308; }
+.status-badge.solved { background-color: #22c55e; }
+.status-badge.unsolved { background-color: #ef4444; }
+
+/* ============================
+   BUTTONS & ICONS
+   ============================ */
+.submit-btn {
+  background-color: #2563eb;
+  color: #fff;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.submit-btn:hover {
+  background-color: #1e40af;
+  transform: scale(1.05);
+}
+.submit-btn:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.8;
+}
+
+.note-icon {
+  font-size: 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  line-height: 1;
+  color: #2563eb;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.note-icon:hover {
+  transform: scale(1.25);
+  color: #1d4ed8;
+}
+
+/* ============================
+   MODAL
+   ============================ */
+.tc-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.tc-modal__content {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  color: #000;
+  text-align: center;
+}
+.tc-modal__close {
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  font-size: 1.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #666;
+}
+.tc-modal__close:hover {
+  color: #000;
+}
+
+/* ============================
+   HIGHLIGHT NEAR-DUE
+   ============================ */
+.due-soon td {
+  background-color: #fee2e2 !important;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+/* Prevent margin-collapse at the top of each white box */
+.tasks-box {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;       
+}
+
+.tasks-box::before {      
+  content: "";
+  display: table;
+}
+
+#loadingText {
+  display: none; 
+  margin: 0;
+  padding: 0;
+}
+
+/* ============================
+   TABLE HEADER TEXT COLOR FIX
+   ============================ */
+.tasks-table thead th,
+.maintenance-table thead th {
+  color: #ffffff !important;
+  background-color: #2D3E50 !important; 
+  font-weight: 600;
+}
+
+/* ============================
+   TRACKING BADGES
+   ============================ */
+.tracking-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.tracking-badge-green {
+  background-color: #16a34a; /* green */
+}
+
+.tracking-badge-orange {
+  background-color: #f97316; /* orange */
+}
+
+.tracking-badge-red {
+  background-color: #dc2626; /* red */
+}
+
+.tracking-badge-gray {
+  background-color: #9ca3af; /* gray for N/A */
+}

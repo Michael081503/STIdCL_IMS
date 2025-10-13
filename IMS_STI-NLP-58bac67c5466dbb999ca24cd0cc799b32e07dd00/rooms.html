@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rooms</title>
+  <link rel="stylesheet" href="rooms.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="layout">
+
+    <!-- LEFT-CENTER: Tables + Graph -->
+    <div class="left-center-panel">
+
+      <!-- ROW: Rooms + Items Tables -->
+      <div class="tables-row">
+        <!-- LEFT: Rooms Table -->
+        <div class="left-panel">
+          <div class="table-header">Rooms</div>
+          <div class="rooms-table-wrapper">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>Room</th>
+                  <th>Total Items</th>
+                </tr>
+              </thead>
+              <tbody id="rooms-root">
+                <tr><td colspan="2">Loading rooms...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- CENTER: Items Table -->
+        <div class="center-panel">
+          <div class="table-header">Items in Room</div>
+          <div class="items-table-wrapper">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Condition</th>
+                  <th>Date Added</th>
+                </tr>
+              </thead>
+              <tbody id="items-body">
+                <tr><td colspan="3" style="text-align:center;">Select a room to view items</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRAPH -->
+      <div class="graph-panel">
+        <div class="graph-wrapper">
+          <div class="table-header">Items added this month</div>
+          <div class="chart-container">
+            <canvas id="itemsChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Items Overview -->
+    <div class="right-panel stats-panel">
+      <div class="table-header">Items Overview</div>
+      <div class="stats-wrapper">
+        <div id="stats-container">
+          <p class="stats-placeholder">👈 Select a room to view its item overview</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase Logic -->
+  <script type="module" src="rooms.js?v=999"></script>
+</body>
+</html>

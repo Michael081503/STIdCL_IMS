@@ -1,0 +1,122 @@
+/* ============ Home Page Layout ============ */
+.home-container {
+  position: fixed;               /* ✅ make it fill the viewport */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  display: flex;
+  justify-content: center;       /* center horizontally */
+  align-items: center;           /* center vertically */
+  gap: 30px;
+  flex-wrap: nowrap;             /* keep 3 cards on one line on large screens */
+  padding: 0 20px;
+  box-sizing: border-box;
+  z-index: 1;                    /* keep it behind the top header */
+}
+
+/* Card Style */
+.home-card {
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  width: 300px;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  /* ✨ Pop animation */
+  transform: scale(0.9);
+  opacity: 0;
+  animation: popIn 0.5s ease forwards;
+}
+
+/* 🪄 Staggered delays */
+.home-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.home-card:nth-child(2) {
+  animation-delay: 0.25s;
+}
+.home-card:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* ✨ Pop keyframes */
+@keyframes popIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.home-card h2 {
+  margin-top: 0;
+  font-size: 22px;
+  color: #ffd700;
+}
+
+.home-card p {
+  font-size: 16px;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.home-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+/* Visit Button */
+.home-btn {
+  background: #2563eb;
+  color: white;
+  text-decoration: none;
+  padding: 10px 0px;        /* 🟡 smaller padding */
+  border-radius: 6px;       /* 🟡 slightly smaller corners */
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;          /* 🟡 reduced font size */
+  margin-top: 15px;
+  transition: background 0.3s ease;
+}
+
+.home-btn:hover {
+  background: #1e4fc4;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .home-container {
+    flex-wrap: wrap;   /* stack cards when needed */
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;  /* allow scroll on mobile */
+    padding: 40px 20px;
+  }
+
+  .home-card {
+    width: 90%;
+    max-width: 500px;
+  }
+}
+
+body.no-scroll {
+  overflow: hidden;
+  height: 100vh;
+}
+
+.home-card.card-pop-out {
+  transform: scale(0.9);
+  opacity: 0.7;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
