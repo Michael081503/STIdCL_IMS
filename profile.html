@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile</title>
+  <!-- ✅ External stylesheet handles all layout and styling -->
+  <link rel="stylesheet" href="profile.css" />
+  <!-- ✅ Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+</head>
+
+<body>
+  <div class="profile-container">
+    <div class="profile-header">
+      <!-- ✅ Default avatar placeholder; will be replaced by uploaded photo -->
+      <img
+        id="profile-avatar"
+        alt="User Avatar"
+        src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+        onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';"
+      />
+      <div>
+        <h2 id="profile-name">User Profile</h2>
+        <button id="upload-btn" class="upload-button">Change Photo</button>
+        <input type="file" id="avatar-upload" accept="image/*" style="display:none;" />
+
+        <!-- 📝 Edit Name Button -->
+        <button id="edit-name-btn" class="edit-button">
+          <i class="fas fa-pen"></i> Edit Name
+        </button>
+      </div>
+    </div>
+
+    <div class="profile-details">
+      <div class="profile-label">Email:</div>
+      <div id="profile-email">Loading...</div>
+
+      <div class="profile-label">Role:</div>
+      <div id="profile-role">Loading...</div>
+
+      <div class="profile-label">Created At:</div>
+      <div id="profile-created">Loading...</div>
+    </div>
+  </div>
+
+  <!-- 🧰 Edit Name Modal -->
+  <div id="edit-name-modal" class="edit-modal">
+    <h3>Edit Your Name</h3>
+    <input type="text" id="edit-first-name" placeholder="First Name" />
+    <input type="text" id="edit-last-name" placeholder="Last Name" />
+    <button id="save-name-btn" class="save-button">Save</button>
+    <div class="modal-footer">
+      <button id="cancel-edit-btn">Cancel</button>
+    </div>
+    <p id="edit-name-msg"></p>
+  </div>
+
+  <!-- ✅ Firebase-connected script -->
+  <script type="module" src="profile.js"></script>
+</body>
+</html>

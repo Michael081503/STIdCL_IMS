@@ -1,0 +1,118 @@
+/* ============================
+   GLOBAL STYLES
+   ============================ */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #eef2ff, #f9fafb);
+  color: #1f2937;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ============================
+   LAYOUT
+   ============================ */
+.landing-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.landing-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  max-width: 1100px;
+  padding: 40px;
+}
+
+/* ============================
+   BOXES (Two Columns)
+   ============================ */
+.landing-box {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  padding: 40px 30px;
+  text-align: center;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  opacity: 0;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Delay each column for a staggered effect */
+.landing-left {
+  animation: fadeInUp 1s ease forwards;
+}
+.landing-right {
+  animation: fadeInUp 1s ease forwards;
+  animation-delay: 0.4s;
+}
+
+/* Hover effect */
+.landing-box:hover {
+  transform: scale(1.03);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
+}
+
+/* ============================
+   TEXT STYLES
+   ============================ */
+.landing-left h1 {
+  font-size: 1.9rem;
+  color: #2563eb;
+  margin-bottom: 15px;
+}
+
+.landing-left p {
+  line-height: 1.6;
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+.landing-right h2 {
+  font-size: 1.5rem;
+  color: #1e40af;
+  margin-bottom: 12px;
+}
+
+.landing-right p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+/* ============================
+   RESPONSIVE DESIGN
+   ============================ */
+@media (max-width: 900px) {
+  .landing-container {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .landing-box {
+    padding: 30px 20px;
+  }
+
+  .landing-left,
+  .landing-right {
+    animation-delay: 0s !important;
+  }
+}

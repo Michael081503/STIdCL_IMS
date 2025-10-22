@@ -1,0 +1,168 @@
+/* =============================
+   USER PAGE (Styled like Inventory)
+============================= */
+
+.user-page {
+  padding: 20px 30px;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+.user-page h1 {
+  font-size: 24px;
+  margin-bottom: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+.user-table-wrapper {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+#user-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  color: #333;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+#user-table thead {
+  background-color: #2D3E50;
+  color: #fff;
+}
+
+#user-table th,
+#user-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+#user-table th {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+#user-table tbody tr:hover {
+  background-color: #f5f6fa;
+}
+
+#user-table td.loading {
+  text-align: center;
+  padding: 20px;
+  color: #555;
+}
+
+.role-select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.role-select:hover {
+  border-color: #2563eb;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  background-color: #f0f4ff;
+}
+
+.role-select:disabled {
+  background-color: #e9ecef;
+  color: #666;
+  border: 1px solid #ccc;
+}
+
+/* =============================
+   USER PAGE FILTERS + TABLE
+============================= */
+.user-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+#search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  color: #333;
+  background: #fff;
+  transition: border-color 0.2s ease;
+}
+
+#search-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+#role-filter {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#role-filter:hover {
+  border-color: #2563eb;
+}
+
+.role-select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.role-select:hover {
+  border-color: #2563eb;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  background-color: #f0f4ff;
+}
+
+.role-select:disabled {
+  background-color: #e9ecef;
+  color: #666;
+  border: 1px solid #ccc;
+}
+
+@media (max-width: 768px) {
+  .user-page {
+    padding: 10px 15px;
+  }
+
+  #user-table th,
+  #user-table td {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+}

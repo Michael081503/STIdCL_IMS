@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventory</title>
+  <link rel="stylesheet" href="inventory.css" />
+  <!-- Font Awesome for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="layout">
+    <!-- LEFT column: stats, actions, filters, table -->
+    <div class="left-panel">
+      <div id="stats-container">
+        <div class="stat-box stat-total">
+          <div>
+            <div class="stat-title">Total</div>
+            <div id="stat-total" class="stat-value">0</div>
+          </div>
+          <div class="stat-box-icon"><i class="fa-solid fa-box-archive"></i></div>
+        </div>
+
+        <div class="stat-box stat-new">
+          <div>
+            <div class="stat-title">New</div>
+            <div id="stat-new" class="stat-value">0</div>
+          </div>
+          <div class="stat-box-icon"><i class="fa-solid fa-star"></i></div>
+        </div>
+
+        <div class="stat-box stat-good">
+          <div>
+            <div class="stat-title">Good</div>
+            <div id="stat-good" class="stat-value">0</div>
+          </div>
+          <div class="stat-box-icon"><i class="fa-solid fa-thumbs-up"></i></div>
+        </div>
+
+        <div class="stat-box stat-maintenance">
+          <div>
+            <div class="stat-title">For Maintenance</div>
+            <div id="stat-maintenance" class="stat-value">0</div>
+          </div>
+          <div class="stat-box-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+        </div>
+
+        <div class="stat-box stat-replacement">
+          <div>
+            <div class="stat-title">For Replacement</div>
+            <div id="stat-replacement" class="stat-value">0</div>
+          </div>
+          <div class="stat-box-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+        </div>
+      </div>
+
+      <div class="inventory-actions">
+        <button id="add-item-btn" class="btn-primary">
+          <i class="fa-solid fa-circle-plus"></i> Add Item
+        </button>
+        <button id="trash-btn" class="btn-secondary">
+          <i class="fa-solid fa-box-archive"></i> Archive
+        </button>
+      </div>
+
+      <!-- 🔍 Search and Filter Section -->
+      <div class="inventory-filters" style="display:flex; gap:10px; margin:10px 0; flex-wrap:wrap;">
+        <input 
+          type="text" 
+          id="inventory-search-input" 
+          placeholder="Search by ID, name, location, or condition..."
+          style="flex:1; min-width:200px; padding:8px 12px; border:1.5px solid #ccc; border-radius:6px;"
+        />
+        <select id="filter-lab" style="padding:8px 12px; border:1.5px solid #ccc; border-radius:6px; min-width:150px;">
+          <option value="">All Locations</option>
+          <option>Main Building</option>
+          <option>Annex</option>
+          <option>Laboratory 1</option>
+          <option>Laboratory 2</option>
+          <option>Laboratory 3</option>
+          <option>Room 201</option>
+          <option>Room 202</option>
+          <option>Room 203</option>
+          <option>Room 204</option>
+        </select>
+        <select id="filter-condition" style="padding:8px 12px; border:1.5px solid #ccc; border-radius:6px; min-width:150px;">
+          <option value="">All Conditions</option>
+          <option>New</option>
+          <option>Good</option>
+          <option>For Maintenance</option>
+          <option>For Replacement</option>
+        </select>
+      </div>
+
+      <!-- Scrollable Table with sticky header -->
+      <div class="inventory-table-wrapper">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Location</th>
+              <th>Date Added</th>
+              <th>Condition</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="inventory-root">
+            <tr><td colspan="6">Loading inventory...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RIGHT column: charts -->
+    <div class="right-panel">
+      <div id="chart-container">
+        <canvas id="inventory-pie"></canvas>
+      </div>
+      <div id="location-chart-container">
+        <canvas id="location-bar"></canvas>
+      </div>
+      <div id="latest-items-container">
+        <h3>Latest Items Added</h3>
+        <ul id="latest-items-list"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🆕 Date Added Modal -->
+  <div id="dateAddedModal" class="modal-overlay" style="display:none;">
+    <div class="modal modal--small">
+      <h2>Date Added</h2>
+      <p id="dateAddedDescription">Loading...</p>
+      <div style="text-align:center;margin-top:15px;">
+        <button id="requestMaintenanceBtn" style="background-color:#dc2626;color:white;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;">Request Maintenance</button>
+        <button id="closeDateAddedModal" style="margin-left:10px;background-color:#6b7280;color:white;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
+  <script type="module" src="inventory.js"></script>
+</body>
+</html>

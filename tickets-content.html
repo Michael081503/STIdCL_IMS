@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tickets</title>
+  <link rel="stylesheet" href="tickets-content.css" />
+</head>
+<body>
+  <div class="tickets-wrapper">
+    <!-- Top Controls -->
+    <div class="tickets-controls">
+      <button id="tc-createTicketBtn" class="btn-primary">Create New Ticket</button>
+      <div class="tickets-search">
+        <input type="text" id="tc-searchInput" placeholder="Search tickets..." />
+      </div>
+    </div>
+
+    <!-- Tickets Table -->
+    <table class="tickets-table">
+      <thead>
+        <tr id="tc-headerRow">
+          <th>ID</th>
+          <th>Item</th>
+          <th>Concern</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Actions</th>
+          <th>Feedback</th>
+        </tr>
+      </thead>
+      <tbody id="tc-ticketsTableBody">
+        <tr><td colspan="7">Loading tickets...</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="tickets-pagination" id="tc-pagination">
+      <button id="tc-prevPage">Prev</button>
+      <button id="tc-nextPage">Next</button>
+    </div>
+  </div>
+
+  <!-- FAQ Section -->
+  <div class="tickets-faq">
+    <h3>Frequently Asked Questions</h3>
+    <div class="faq-item">
+      <button class="faq-question">
+        How long should my tickets be resolved?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-answer">
+        <p>
+          Administrators are working hard to resolve your submitted tickets.
+          Most concerns are addressed within <strong>3–5 working days</strong>.
+        </p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">
+        How will I know if there’s an update on my ticket?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-answer">
+        <p>
+          You can check your ticket’s <strong>Status</strong> in the table.
+          Updates appear in the <strong>Feedback</strong> section.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Ticket Modal -->
+  <div id="tc-ticketModal" class="tc-modal" aria-hidden="true">
+    <div class="tc-modal__content">
+      <button id="tc-closeModal" class="tc-modal__close">&times;</button>
+      <h3>Create Ticket</h3>
+
+      <label for="tc-ticketConcern">Problem</label>
+      <select id="tc-ticketConcern" required>
+        <option value="">-- Select a problem --</option>
+        <option value="Hardware Issue">Hardware Issue</option>
+        <option value="Software Malfunction">Software Malfunction</option>
+        <option value="Network Connectivity">Network Connectivity</option>
+        <option value="Peripheral Not Working">Peripheral Not Working</option>
+        <option value="Printer/Scanner Issue">Printer/Scanner Issue</option>
+        <option value="System Crash or Freeze">System Crash or Freeze</option>
+        <option value="Performance Problem">Performance Problem</option>
+        <option value="Login/Account Issue">Login/Account Issue</option>
+        <option value="Display/Monitor Problem">Display/Monitor Problem</option>
+        <option value="Others - Please explain the issue in the description">Others - Explain the issue in the description</option>
+      </select>
+
+
+      <label for="tc-ticketDescription">Description</label>
+      <textarea id="tc-ticketDescription" rows="3" placeholder="Enter description"></textarea>
+
+      <label for="tc-ticketItem">Item</label>
+
+      <div class="item-select-wrapper">
+        <button id="tc-selectItemBtn" type="button" class="btn-primary">Select Item</button>
+        <span id="tc-selectedItemLabel" style="margin-left:10px; font-weight:500; color:#2563eb;">No item selected</span>
+      </div>
+
+
+      <label for="tc-ticketImages">Attach Images</label>
+      <input type="file" id="tc-ticketImages" multiple accept="image/*" />
+
+      <button id="tc-submitTicketBtn" class="btn-primary">Submit</button>
+    </div>
+  </div>
+
+  <!-- View Images Modal -->
+  <div id="viewTicketImagesModal" class="tc-modal" aria-hidden="true">
+    <div class="tc-modal__content">
+      <button id="closeViewImagesModal" class="tc-modal__close">&times;</button>
+      <h3>Attached Images</h3>
+      <div id="ticketImagesContainer" class="ticket-images-container"></div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Lightbox -->
+  <div id="imageLightbox" class="image-lightbox" aria-hidden="true">
+    <img id="lightboxImage" src="" alt="Preview" />
+  </div>
+
+  <!-- Feedback Modal -->
+  <div id="viewFeedbackModal" class="tc-modal" aria-hidden="true">
+    <div class="tc-modal__content">
+      <button id="closeViewFeedback" class="tc-modal__close">&times;</button>
+      <h3>Admin Feedback</h3>
+      <div id="feedbackTimeline"></div>
+    </div>
+  </div>
+
+  <!-- Description Modal -->
+  <div id="viewDescriptionModal" class="tc-modal" aria-hidden="true">
+    <div class="tc-modal__content">
+      <button id="closeViewDescription" class="tc-modal__close">&times;</button>
+      <h3>Ticket Description</h3>
+      <p id="fullDescriptionText"></p>
+    </div>
+  </div>
+
+  <!-- Set Deadline Modal -->
+  <div id="setDeadlineModal" class="tc-modal" aria-hidden="true">
+    <div class="tc-modal__content">
+      <button id="closeDeadlineModal" class="tc-modal__close">&times;</button>
+      <h3>Set Task Deadline</h3>
+      <label for="deadlineDate">Deadline Date</label>
+      <input type="date" id="deadlineDate" />
+      <label for="deadlineNote">Additional Note (optional)</label>
+      <textarea id="deadlineNote" rows="3"></textarea>
+      <button id="saveDeadlineBtn" class="btn-primary">Save</button>
+    </div>
+  </div>
+
+  <!-- Review Submission Modal -->
+  <div id="reviewSubmissionModal" class="tc-modal" aria-hidden="true">
+    <div class="tc-modal__content">
+      <button id="closeReviewModal" class="tc-modal__close">&times;</button>
+      <h3>Review Task Submission</h3>
+      <p><strong>Submitted by:</strong> <span id="submittedByName">—</span></p>
+      <div class="modal-actions">
+        <button id="markSolvedBtn" class="btn-primary">Mark as Solved</button>
+        <button id="markUnsolvedBtn" class="btn-danger">Mark as Unsolved</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Modal -->
+  <div id="statusModal" class="tc-modal" aria-hidden="true">
+    <div class="tc-modal__content">
+      <button id="closeStatusModal" class="tc-modal__close">&times;</button>
+      <h3>Status</h3>
+      <p>You can mark this task as urgent if it requires immediate attention.</p>
+      <button id="markUrgentBtn" class="btn-danger">Mark as Urgent</button>
+    </div>
+  </div>
+
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.5.0/firebase-storage.js"></script>
+  <script type="module" src="tickets-content.js"></script>
+</body>
+</html>

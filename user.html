@@ -1,0 +1,30 @@
+<div class="user-page">
+  <h1>User Management</h1>
+
+  <!-- 🔍 Search & Filter Controls -->
+  <div class="user-controls">
+    <input type="text" id="search-input" placeholder="Search by name or email..." />
+    <select id="role-filter">
+      <option value="All">All Roles</option>
+      <option value="Admin">Admin</option>
+      <option value="Maintenance">Maintenance</option>
+      <option value="User">User</option>
+    </select>
+  </div>
+
+  <div class="user-table-wrapper">
+    <table id="user-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Date Created</th>
+        </tr>
+      </thead>
+      <tbody id="user-table-body">
+        <tr><td colspan="4" class="loading">Loading users...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>

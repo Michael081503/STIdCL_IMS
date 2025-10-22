@@ -1,0 +1,80 @@
+/* ============ Home Page Layout ============ */
+.home-intro-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end; /* right side */
+  align-items: center;
+  padding-right: 8%;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+/* Intro card box */
+.home-intro-card {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 50px 60px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+  max-width: 420px;
+  width: 100%;
+  animation: fadeInUp 0.8s ease forwards;
+  transform: translateY(30px);
+  opacity: 0;
+}
+
+.home-intro-card h1 {
+  font-size: 28px;
+  color: #ffd700;
+  margin: 0 0 20px;
+}
+
+.home-intro-card p {
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 40px;
+  color: #f1f1f1;
+}
+
+.get-started-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 0;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.get-started-btn:hover {
+  background: #1e4fc4;
+  transform: translateY(-3px);
+}
+
+/* Fade-in animation */
+@keyframes fadeInUp {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive for smaller screens */
+@media (max-width: 900px) {
+  .home-intro-container {
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .home-intro-card {
+    max-width: 90%;
+    text-align: center;
+  }
+}

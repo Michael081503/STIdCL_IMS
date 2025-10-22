@@ -1,0 +1,784 @@
+// ==================== MAIN SCRIPT ====================
+window.onload = function () {
+  console.log("Script loaded and window.onload triggered");
+  document.body.classList.add('firebase-initialized');
+  loadPage('home');
+
+  // ==================== FIREBASE CONFIGURATION ====================
+  const firebaseConfig = {
+    apiKey: "AIzaSyAw2rSjJ3f_S98dntbsyl9kyXvi9MC44Dw",
+    authDomain: "fir-inventory-2e62a.firebaseapp.com",
+    projectId: "fir-inventory-2e62a",
+    storageBucket: "fir-inventory-2e62a.firebasestorage.app",
+    messagingSenderId: "380849220480",
+    appId: "1:380849220480:web:5a43b227bab9f9a197af65",
+    measurementId: "G-ERT87GL4XC"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // ==================== DOM ELEMENTS ====================
+  const loginModal = document.getElementById('login-modal');
+  const sideNav = document.querySelector('.side-nav');
+  // LOGIN BUTTON
+  const loginBtn = document.querySelector('.login-btn');
+  if (loginBtn) loginBtn.style.display = 'none'; // REMOVE THIS LINE IF GAGAMITIN YUNG LOGIN BUTTON (DO THIS IN HTML TOO)
+
+  const closeLogin = document.getElementById('close-login');
+  const toggleRegister = document.getElementById('toggle-register');
+  const toggleLogin = document.getElementById('toggle-login');
+  const registerBtn = document.getElementById('register-btn');
+  const loginActionBtn = document.getElementById('login-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+  const profileBtn = document.getElementById('profile-btn');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const loginError = document.getElementById('login-error');
+  const avatar = document.getElementById('user-avatar');
+  const avatarDropdown = document.getElementById('avatar-dropdown');
+  const inventoryLink = document.getElementById('inventory-link');
+  const myTicketsLink = document.getElementById('my-tickets-link');
+  const loginGroup = document.querySelector('.login-avatar-group');
+  const roleSelect = document.getElementById('role-select');
+  const modalTitle = loginModal.querySelector('h2');
+  const automateWrapper = document.getElementById('automate-btn-wrapper');
+  const automateBtn = document.getElementById('automate-btn');
+
+
+  // ==================== NOTIFICATION ELEMENTS ====================
+  const notifWrapper = document.getElementById('notification-wrapper');
+  const notifBtn = document.getElementById('notification-btn');
+  const notifCount = document.getElementById('notification-count');
+  const notifDropdown = document.getElementById('notification-dropdown');
+  const notifList = document.getElementById('notification-list');
+
+  let ticketUnsub = null;
+  let notifUnsub = null;
+
+  // ==================== NOTIFICATION HELPERS ====================
+  async function getDismissed(uid) {
+    if (!uid) return [];
+    try {
+      const doc = await db.collection("users").doc(uid).get();
+      return doc.exists && Array.isArray(doc.data().dismissedNotifs)
+        ? doc.data().dismissedNotifs
+        : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async function addDismissed(uid, notifId) {
+    if (!uid || !notifId) return;
+    try {
+      await db.collection("users").doc(uid).set(
+        { dismissedNotifs: firebase.firestore.FieldValue.arrayUnion(notifId) },
+        { merge: true }
+      );
+    } catch (e) {
+      console.error("Error adding dismissed notification:", e);
+    }
+  }
+
+  function showNotification(count) {
+    if (!notifCount) return;
+    if (count > 0) {
+      notifCount.classList.remove("count-animate");
+      void notifCount.offsetWidth;
+      notifCount.classList.add("count-animate");
+      notifCount.textContent = count;
+      notifCount.style.display = "inline-flex";
+    } else {
+      notifCount.style.display = "none";
+    }
+  }
+
+  // ==================== NOTIFICATION RENDERER ====================
+  async function renderNotifications(docs, isAdmin = false) {
+    notifList.innerHTML = "";
+    const uid = auth.currentUser ? auth.currentUser.uid : null;
+    if (!uid) return;
+    const dismissed = await getDismissed(uid);
+    let activeDocs = docs.filter(doc => !dismissed.includes(doc.id));
+
+    if (activeDocs.length === 0) {
+      const emptyEl = notifDropdown.querySelector(".notif-empty");
+      if (emptyEl) emptyEl.style.display = "block";
+    } else {
+      const emptyEl = notifDropdown.querySelector(".notif-empty");
+      if (emptyEl) emptyEl.style.display = "none";
+
+      activeDocs.forEach(doc => {
+        const data = doc.data();
+        const li = document.createElement("li");
+        const rawDate = data.createdAt?.toDate() || new Date();
+        const dateStr = rawDate.toLocaleString(undefined, {
+          year: 'numeric', month: 'short', day: 'numeric',
+          hour: 'numeric', minute: '2-digit', hour12: true
+        });
+        const titleSpan = document.createElement("span");
+        titleSpan.classList.add("notif-text");
+        titleSpan.textContent = isAdmin ? "New ticket issued" : (data.message || "Notification");
+
+        if (isAdmin) {
+          const descDiv = document.createElement("div");
+          descDiv.classList.add("notif-desc");
+          const userSpan = document.createElement("span");
+          userSpan.style.fontWeight = "600";
+          userSpan.style.color = "#000";
+          userSpan.textContent = data.issuedByName || data.issuedBy || "Unknown user";
+          const middleSpan = document.createElement("span");
+          middleSpan.style.color = "#444";
+          middleSpan.textContent = " issued a ticket regarding ";
+          const itemSpan = document.createElement("span");
+          itemSpan.style.fontWeight = "600";
+          itemSpan.style.color = "#000";
+          itemSpan.textContent = data.itemName || "an item";
+          descDiv.appendChild(userSpan);
+          descDiv.appendChild(middleSpan);
+          descDiv.appendChild(itemSpan);
+          li.appendChild(titleSpan);
+          li.appendChild(descDiv);
+        } else {
+          li.appendChild(titleSpan);
+          if (data.message && !isAdmin) {
+            const msgDiv = document.createElement("div");
+            msgDiv.classList.add("notif-desc");
+            msgDiv.textContent = data.message;
+            li.appendChild(msgDiv);
+          }
+        }
+
+        const timeSpan = document.createElement("span");
+        timeSpan.classList.add("notif-time");
+        timeSpan.textContent = dateStr;
+        const dismissBtn = document.createElement("span");
+        dismissBtn.textContent = "×";
+        dismissBtn.classList.add("dismiss-btn");
+        dismissBtn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          li.classList.add("fade-out");
+          li.addEventListener("transitionend", async () => {
+            li.remove();
+            await addDismissed(uid, doc.id);
+            activeDocs = activeDocs.filter(d => d.id !== doc.id);
+            showNotification(activeDocs.length);
+            if (activeDocs.length === 0) {
+              const emptyEl = notifDropdown.querySelector(".notif-empty");
+              if (emptyEl) emptyEl.style.display = "block";
+            }
+          }, { once: true });
+        });
+
+        li.addEventListener("click", () => {
+          notifDropdown.classList.remove("visible");
+          loadPage("mytickets");
+          setActiveLink(document.getElementById("my-tickets-link-a"));
+        });
+
+        li.appendChild(timeSpan);
+        li.appendChild(dismissBtn);
+        notifList.appendChild(li);
+      });
+    }
+    showNotification(activeDocs.length);
+  }
+
+  // ==================== LOGIN & REGISTER TRANSITION ====================
+  function clearLoginFields() {
+    document.getElementById('first-name').value = '';
+    document.getElementById('last-name').value = '';
+    emailInput.value = '';
+    passwordInput.value = '';
+    loginError.textContent = '';
+  }
+  function resetToLoginMode() {
+    modalTitle.textContent = 'Login';
+    registerBtn.style.display = 'none';
+    loginActionBtn.style.display = 'block';
+    toggleRegister.style.display = 'block';
+    toggleLogin.style.display = 'none';
+    document.getElementById('first-name').style.display = 'none';
+    document.getElementById('last-name').style.display = 'none';
+  }
+
+  function animateTransition(showRegister) {
+    clearLoginFields();
+    loginModal.classList.add('fade-transition');
+    const loginOptions = document.getElementById('login-options');
+    
+    setTimeout(() => {
+      if (showRegister) {
+        modalTitle.textContent = 'Create Account';
+        registerBtn.style.display = 'block';
+        loginActionBtn.style.display = 'none';
+        toggleRegister.style.display = 'none';
+        toggleLogin.style.display = 'block';
+        // No roleSelect anymore
+        document.getElementById('first-name').style.display = 'block';
+        document.getElementById('last-name').style.display = 'block';
+        if (loginOptions) loginOptions.style.display = 'none';
+      } else {
+        modalTitle.textContent = 'Login';
+        registerBtn.style.display = 'none';
+        loginActionBtn.style.display = 'block';
+        toggleRegister.style.display = 'block';
+        toggleLogin.style.display = 'none';
+        document.getElementById('first-name').style.display = 'none';
+        document.getElementById('last-name').style.display = 'none';
+        if (loginOptions) loginOptions.style.display = 'flex';
+      }
+      loginModal.classList.remove('fade-transition');
+    }, 200);
+  }
+
+  // ==================== LOGIN & REGISTER LOGIC ====================
+  loginBtn.addEventListener('click', () => {
+    clearLoginFields();
+    loginModal.style.display = 'block';
+  });
+
+  closeLogin.addEventListener('click', () => {
+    clearLoginFields();
+    loginModal.style.display = 'none';
+    resetToLoginMode();
+  });
+
+  toggleRegister.addEventListener('click', () => animateTransition(true));
+  toggleLogin.addEventListener('click', () => animateTransition(false));
+
+  registerBtn.addEventListener('click', () => {
+    const firstName = document.getElementById('first-name').value.trim();
+    const lastName = document.getElementById('last-name').value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    const role = "User";
+
+    if (!firstName || !lastName) {
+      loginError.textContent = "Please enter your first and last name.";
+      return;
+    }
+
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(userCredential => {
+        const user = userCredential.user;
+        return db.collection('users').doc(user.uid).set({
+          firstName, lastName, email, role,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          dismissedNotifs: []
+        });
+      })
+      .then(() => {
+        clearLoginFields();
+        loginModal.style.display = 'none';
+        resetToLoginMode();
+      })
+      .catch(error => loginError.textContent = error.message);
+  });
+
+  loginActionBtn.addEventListener('click', () => {
+    const email = emailInput.value;
+    const password = passwordInput.value;
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        clearLoginFields();
+        loginModal.style.display = 'none';
+      })
+      .catch(error => loginError.textContent = error.message);
+  });
+  
+  // ==================== REMEMBER ME ====================
+const rememberMeCheckbox = document.getElementById("remember-me");
+//const emailInput = document.getElementById("email");
+
+if (localStorage.getItem("rememberedEmail")) {
+  emailInput.value = localStorage.getItem("rememberedEmail");
+  rememberMeCheckbox.checked = true;
+}
+
+rememberMeCheckbox.addEventListener("change", () => {
+  if (rememberMeCheckbox.checked) {
+    localStorage.setItem("rememberedEmail", emailInput.value);
+  } else {
+    localStorage.removeItem("rememberedEmail");
+  }
+});
+
+emailInput.addEventListener("input", () => {
+  if (rememberMeCheckbox.checked) {
+    localStorage.setItem("rememberedEmail", emailInput.value);
+  }
+});
+
+// ==================== FORGOT PASSWORD ====================
+const forgotPasswordLink = document.getElementById("forgot-password-link");
+const forgotPasswordModal = document.getElementById("forgot-password-modal");
+const sendResetLinkBtn = document.getElementById("send-reset-link");
+const closeResetModalBtn = document.getElementById("close-reset-modal");
+const resetEmailInput = document.getElementById("reset-email");
+const resetMessage = document.getElementById("reset-message");
+
+// Open modal
+forgotPasswordLink.addEventListener("click", (e) => {
+  e.preventDefault();
+  forgotPasswordModal.style.display = "flex";
+  resetMessage.textContent = "";
+  resetEmailInput.value = emailInput.value || "";
+});
+
+// Close modal
+closeResetModalBtn.addEventListener("click", () => {
+  forgotPasswordModal.style.display = "none";
+});
+
+// Send password reset
+sendResetLinkBtn.addEventListener("click", async () => {
+  const email = resetEmailInput.value.trim();
+  if (!email) {
+    resetMessage.style.color = "#f87171";
+    resetMessage.textContent = "Please enter your email address.";
+    return;
+  }
+
+  try {
+    await auth.sendPasswordResetEmail(email);
+    resetMessage.style.color = "#4ade80";
+    resetMessage.textContent = "✅ Reset link sent! Check your inbox.";
+  } catch (error) {
+    resetMessage.style.color = "#f87171";
+    resetMessage.textContent = error.message;
+  }
+});
+
+// Close when clicking outside
+window.addEventListener("click", (e) => {
+  if (e.target === forgotPasswordModal) {
+    forgotPasswordModal.style.display = "none";
+  }
+});
+
+
+  // ==================== LOGOUT LOGIC ====================
+  logoutBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      await auth.signOut();
+      avatarDropdown.classList.remove('visible');
+      avatar.style.display = 'none';
+      loginBtn.style.display = 'flex';
+      inventoryLink.style.display = 'none';
+      myTicketsLink.style.display = 'none';
+      document.getElementById('user-role').style.display = 'none';
+      if (notifWrapper) notifWrapper.style.display = 'none';
+      if (ticketUnsub) { ticketUnsub(); ticketUnsub = null; }
+      if (notifUnsub) { notifUnsub(); notifUnsub = null; }
+      notifList.innerHTML = "";
+      showNotification(0);
+      if (notifDropdown.querySelector(".notif-empty")) {
+        notifDropdown.querySelector(".notif-empty").style.display = "block";
+      }
+
+      clearPageCSS();
+      clearDynamicModals();
+
+      loadPage('home');
+      setActiveLink(document.getElementById('home-link'));
+      alert('You have been logged out.');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      alert('Error logging out. Try again.');
+    }
+  });
+
+  // ==================== PROFILE LINK HANDLER ====================
+  if (profileBtn) {
+    profileBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      loadPage('profile');
+      setActiveLink(document.getElementById('home-link'));
+      avatarDropdown.classList.remove('visible');
+    });
+  }
+  
+  // ==================== AVATAR DROPDOWN ====================
+  avatar.addEventListener("click", (e) => {
+    e.stopPropagation();
+    notifDropdown.classList.remove("visible");
+    avatarDropdown.classList.toggle("visible");
+  });
+  avatarDropdown.addEventListener("click", (e) => e.stopPropagation());
+  document.addEventListener("click", () => avatarDropdown.classList.remove("visible"));
+
+// ==================== AUTH STATE CHANGE HANDLER ====================
+auth.onAuthStateChanged(user => {
+  if (ticketUnsub) { ticketUnsub(); ticketUnsub = null; }
+  if (notifUnsub) { notifUnsub(); notifUnsub = null; }
+
+  if (user) {
+    avatar.style.display = 'block';
+    sideNav.classList.add('active');
+    loginBtn.style.display = 'none';
+
+    // ✅ Load Landing Page cleanly (no duplication)
+    loadPage('landing');
+
+
+
+    // Fetch user document for role and avatar
+    db.collection('users').doc(user.uid).get()
+      .then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          const role = data.role || 'User';
+          const userRoleDiv = document.getElementById('user-role');
+          userRoleDiv.textContent = user.email;
+          userRoleDiv.style.display = 'block';
+
+          // Update avatar image from Firestore
+          const avatarImgEl = document.querySelector('#user-avatar img');
+          if (data.avatarURL && avatarImgEl) {
+            avatarImgEl.src = data.avatarURL + '?t=' + Date.now();
+          } else if (avatarImgEl) {
+            avatarImgEl.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+          }
+
+          // Real-time listener for avatar changes
+          db.collection('users').doc(user.uid).onSnapshot(docSnap => {
+            if (docSnap.exists) {
+              const newAvatarURL = docSnap.data().avatarURL;
+              const avatarImgEl = document.querySelector('#user-avatar img');
+              if (avatarImgEl) {
+                if (newAvatarURL) {
+                  avatarImgEl.src = newAvatarURL + '?t=' + Date.now();
+                } else {
+                  avatarImgEl.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                }
+              }
+            }
+          });
+
+          // ==================== ROLE HANDLING ====================
+          inventoryLink.style.display = 'none';
+          myTicketsLink.style.display = 'none';
+          document.getElementById('rooms-link-a').style.display = 'none';
+          document.getElementById('tasks-link').style.display = 'none';
+          if (notifWrapper) notifWrapper.style.display = 'none';
+          if (role === 'Admin' || role === 'Maintenance') {
+            automateWrapper.style.display = 'flex';
+          } else {
+            automateWrapper.style.display = 'none';
+          }
+
+          if (role === 'Admin' || role === 'Maintenance') {
+            if (notifWrapper) notifWrapper.style.display = 'flex';
+
+            const roomsLinkLi = document.getElementById('rooms-link'); // <li>
+            const roomsLinkA = document.getElementById('rooms-link-a'); // <a>
+            const tasksLink = document.getElementById('tasks-link');
+
+            if (roomsLinkLi) roomsLinkLi.style.display = 'block'; 
+          // ==================== ADMIN LOGIN ====================
+            if (role === 'Admin') {
+              inventoryLink.style.display = 'block';
+              myTicketsLink.style.display = 'block';
+              if (roomsLinkA) roomsLinkA.style.display = 'block';
+              if (roomsLinkLi) roomsLinkLi.style.display = 'block';
+              tasksLink.style.display = 'none';
+              document.getElementById('users-link').style.display = 'block';
+            }
+
+            if (role === 'Maintenance') {
+              if (roomsLinkA) roomsLinkA.style.display = 'block';
+              if (roomsLinkLi) roomsLinkLi.style.display = 'block';
+              inventoryLink.style.display = 'none';
+              myTicketsLink.style.display = 'none';
+              tasksLink.style.display = 'block';
+            }
+
+            ticketUnsub = db.collection('tickets')
+              .orderBy('createdAt', 'desc')
+              .limit(20)
+              .onSnapshot(snapshot => renderNotifications(snapshot.docs, true));
+          // ==================== USER LOGIN ====================
+          } else if (role === 'User') {
+            inventoryLink.style.display = 'none';
+            myTicketsLink.style.display = 'block';
+            if (notifWrapper) notifWrapper.style.display = 'flex';
+            document.getElementById('rooms-link-a').style.display = 'none';
+
+            notifUnsub = db.collection('notifications')
+              .where("createdByRole", "==", "Admin")
+              .orderBy("createdAt", "desc")
+              .limit(20)
+              .onSnapshot(snapshot => {
+                renderNotifications(snapshot.docs, false);
+                if (snapshot.empty) {
+                  const emptyEl = notifDropdown.querySelector(".notif-empty");
+                  if (emptyEl) emptyEl.style.display = "block";
+                  notifList.innerHTML = "";
+                  showNotification(0);
+                }
+              });
+          } else {
+            inventoryLink.style.display = 'none';
+            myTicketsLink.style.display = 'none';
+            if (notifWrapper) notifWrapper.style.display = 'none';
+            document.getElementById('users-link').style.display = 'none';
+            document.getElementById('rooms-link-a').style.display = 'none';
+          }
+        }
+      })
+      .catch(() => {
+        inventoryLink.style.display = 'none';
+        myTicketsLink.style.display = 'none';
+        if (notifWrapper) notifWrapper.style.display = 'none';
+        document.getElementById('rooms-link-a').style.display = 'none';
+      });
+
+  } else {
+    // ==================== LOGGED OUT STATE ====================
+    avatar.style.display = 'none';
+    sideNav.classList.remove('active');
+    loginBtn.style.display = 'inline-flex';
+    inventoryLink.style.display = 'none';
+    myTicketsLink.style.display = 'none';
+    document.getElementById('users-link').style.display = 'none';
+    document.getElementById('user-role').style.display = 'none';
+    document.getElementById('tasks-link').style.display = 'none';
+    if (notifWrapper) notifWrapper.style.display = 'none';
+    notifList.innerHTML = "";
+    showNotification(0);
+    const emptyEl = notifDropdown.querySelector(".notif-empty");
+    if (emptyEl) emptyEl.style.display = "block";
+    document.getElementById('rooms-link-a').style.display = 'none';
+    const roomsLi = document.getElementById('rooms-link');
+    if (roomsLi) roomsLi.style.display = 'none';
+    automateWrapper.style.display = 'none';
+
+    // ✅ Restore original background when logged out
+    document.body.style.background = "url('Assets/BG_Main.jpg') no-repeat center center fixed";
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundRepeat = 'no-repeat';
+    document.body.style.backgroundPosition = 'center';
+
+
+    // ✅ Reset avatar image on logout
+    const avatarImgEl = document.querySelector('#user-avatar img');
+    if (avatarImgEl) {
+      avatarImgEl.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+    }
+  }
+});
+
+  // ==================== NOTIFICATION DROPDOWN ====================
+  if (notifBtn) {
+    notifBtn.addEventListener('click', () => notifDropdown.classList.toggle('visible'));
+    document.addEventListener('click', (event) => {
+      if (notifWrapper && !notifWrapper.contains(event.target)) {
+        notifDropdown.classList.remove('visible');
+      }
+    });
+  }
+
+  // ==================== NAVIGATION HANDLER ====================
+  const navUl = document.querySelector('nav.side-nav ul');
+  navUl.addEventListener('click', function (e) {
+    if (e.target.tagName === 'A') {
+      const id = e.target.id;
+      const pageMap = {
+        'home-link': 'home',
+        'my-tickets-link-a': 'mytickets',
+        'inventory-link-a': 'inventory',
+        'profile-link': 'profile',
+        'rooms-link-a': 'rooms',
+        'tasks-link-a': 'tasks',
+        'users-link-a': 'users'
+      };
+      if (pageMap[id]) {
+        e.preventDefault();
+        loadPage(pageMap[id]);
+        setActiveLink(e.target);
+      }
+    }
+  });
+
+  function setActiveLink(activeLink) {
+    const allLinks = navUl.querySelectorAll('li a');
+    allLinks.forEach(l => l.classList.remove('active'));
+    activeLink.classList.add('active');
+  }
+
+// ==================== AUTOMATE BUTTON HANDLER ====================
+automateBtn.addEventListener('click', () => {
+  const mainContent = document.getElementById('main-content');
+
+  // Check if we are on the Inventory page
+  if (mainContent && mainContent.querySelector('.inventory-table')) {
+    if (typeof window.showAutomateModal === 'function') {
+      window.showAutomateModal();
+    }
+  }
+
+  // Check if we are on the Tickets page
+  else if (mainContent && mainContent.querySelector('#tc-ticketsTableBody')) {
+    if (typeof window.showTicketsAutomateModal === 'function') {
+      window.showTicketsAutomateModal();
+    }
+  }
+
+  else {
+    console.log('🤖 Automate button clicked — but no matching page found.');
+  }
+});
+
+
+  // ==================== CSS CLEANUP HELPER =====================
+  function clearPageCSS() {
+    const pageCSS = document.querySelectorAll('link[id$="-css"]');
+    pageCSS.forEach(link => link.remove());
+  }
+
+  // ==================== GLOBAL PAGE CLEANUP ====================
+  function clearDynamicModals() {
+    document.querySelectorAll(".tc-modal").forEach(modal => modal.remove());
+    window.__submitModalInitialized = false;
+    window.__finishMaintenanceHandlerAttached = false;
+  }
+
+  // ==================== DYNAMIC PAGE LOADER ====================
+  function loadPage(page) {
+    clearPageCSS(); 
+      if (page === 'home') {
+        document.body.classList.add('no-scroll');
+      } else {
+        document.body.classList.remove('no-scroll');
+      }
+
+    let fileName = '';
+    let bgImage = '';
+    switch (page) {
+      case 'home':
+        fileName = 'home.html';
+        bgImage = "url('Assets/BG_Main.jpg')";
+        break;
+      case 'landing':
+        fileName = 'landingpage.html';
+        bgImage = "url('Assets/BG_Inventory.jpg')";
+        break;
+      case 'mytickets':
+        fileName = 'tickets-content.html';
+        bgImage = "url('Assets/BG_Inventory.jpg')";
+        break;
+      case 'inventory':
+        fileName = 'inventory.html';
+        bgImage = "url('Assets/BG_Inventory.jpg')";
+        break;
+      case 'profile':
+        fileName = 'profile.html';
+        bgImage = "url('Assets/BG_Inventory.jpg')";
+        break;
+      case 'rooms':
+        fileName = 'rooms.html';
+        break;
+      case 'tasks':
+        fileName = 'tasks.html';
+        bgImage = "url('Assets/BG_Inventory.jpg')";
+        break;
+      case 'users':
+      fileName = 'user.html';
+      bgImage = "url('Assets/BG_Inventory.jpg')";
+      break;
+      default:
+        fileName = 'home.html';
+        bgImage = "url('Assets/BG_Main.jpg')";
+    }
+
+    fetch(fileName)
+      .then(response => {
+        if (!response.ok) throw new Error('Page not found');
+        return response.text();
+      })
+      .then(html => {
+        document.getElementById('main-content').innerHTML = html;
+        document.body.style.backgroundImage = bgImage;
+
+        function loadCSS(id, href) {
+          const pageCSS = document.querySelectorAll('link[id$="-css"]');
+          pageCSS.forEach(link => link.remove());
+          const cssLink = document.createElement('link');
+          cssLink.id = id;
+          cssLink.rel = 'stylesheet';
+          cssLink.href = href;
+          document.head.appendChild(cssLink);
+        }
+
+        function loadJS(id, src, isModule = true) {
+          const oldScript = document.getElementById(id);
+          if (oldScript) oldScript.remove();
+          const script = document.createElement('script');
+          script.id = id;
+          script.src = `${src}?t=${Date.now()}`;
+          script.type = isModule ? 'module' : 'text/javascript';
+          script.defer = true;
+          document.body.appendChild(script);
+        }
+
+        if (page === 'home') {
+          loadCSS('home-css', 'home.css');
+          loadJS('home-js', 'home.js');
+        }
+        if (page === 'inventory') {
+          loadCSS('inventory-css', 'inventory.css');
+          loadJS('chart-lib', 'chart.umd.js', false);
+          loadJS('inventory-js', 'inventory.js', true);
+        }
+        if (page === 'mytickets') {
+          loadCSS('tickets-css', 'tickets-content.css');
+          loadJS('tickets-js', 'tickets-content.js');
+        }
+        if (page === 'profile') {
+          loadCSS('profile-css', 'profile.css');
+          loadJS('profile-js', 'profile.js');
+        }
+        if (page === 'rooms') {
+          loadJS('chart-lib', 'chart.umd.js', false);
+          loadCSS('rooms-css', 'rooms.css');
+          loadJS('rooms-js', 'rooms.js');
+        }
+        if (page === 'tasks') {
+          loadCSS('tasks-css', 'tasks.css');
+          loadJS('tasks-js', 'tasks.js');
+        }
+        if (page === 'users') {
+          loadCSS('user-css', 'user.css');
+          loadJS('user-js', 'user.js');
+        }
+        if (page === 'users') {
+          loadCSS('user-css', 'user.css');
+          loadJS('user-js', 'user.js');
+        }
+        if (page === 'landing') {
+          loadCSS('landingpage-css', 'landingpage.css');
+          loadJS('landingpage-js', 'landingpage.js');
+        }
+
+
+      })
+      .catch(err => {
+        document.getElementById('main-content').innerHTML = '<p>Error loading page.</p>';
+        console.error(err);
+      });
+  }
+  // ==================== REMOVE THIS SEGMENT IF KAILANGAN NG LOGIN BUTTON ====================
+const loginBtnForce = document.querySelector('.login-btn');
+if (loginBtnForce) {
+  loginBtnForce.style.display = 'none';
+  const observer = new MutationObserver(() => {
+    loginBtnForce.style.display = 'none';
+  });
+  observer.observe(loginBtnForce, { attributes: true, attributeFilter: ['style'] });
+}
+
+};

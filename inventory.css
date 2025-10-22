@@ -1,0 +1,824 @@
+/* ===========================
+   General Layout
+   =========================== */
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f7f7f7;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #000;
+}
+
+/* ===========================
+   Stats Section
+   =========================== */
+#stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  max-width: 1000px;  
+  margin-left: 0;      
+  margin-right: 0;
+}
+
+.stat-box {
+  flex: 1;
+  min-width: 180px;
+  padding: 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.3s ease;
+}
+.stat-box:hover { background: #3a4f65; }
+.stat-title { font-size: 16px; opacity: 0.9; }
+.stat-value { font-size: 28px; margin-top: 5px; }
+.stat-box-icon { font-size: 36px; opacity: 0.3; }
+
+/* ===========================
+   Stats Section
+   =========================== */
+#stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: flex-start;
+}
+
+.stat-box {
+  flex: 1;
+  min-width: 180px;
+  padding: 20px;
+  border-radius: 8px;
+  background: #2D3E50; /* Neutral dark */
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.stat-title {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.stat-value {
+  font-size: 28px;
+  margin-top: 5px;
+}
+
+.stat-box-icon {
+  font-size: 36px;
+  opacity: 0.3;
+}
+
+.stat-total:hover {
+  background: linear-gradient(135deg, #3b82f6, #2563eb); /* Blue */
+}
+.stat-new:hover {
+  background: linear-gradient(135deg, #10b981, #059669); /* Green */
+}
+.stat-good:hover {
+  background: linear-gradient(135deg, #22c55e, #15803d); /* Emerald */
+}
+.stat-maintenance:hover {
+  background: linear-gradient(135deg, #eab308, #ca8a04); /* Amber */
+}
+.stat-replacement:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c); /* Red */
+}
+
+/* ===========================
+   Inventory Action Buttons
+   =========================== */
+.inventory-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 0px !important;
+  gap: 5px;
+  max-width: 100%;
+}
+
+#add-item-btn,
+#trash-btn {
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  background-color: #2D3E50;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+#add-item-btn:hover,
+#trash-btn:hover {
+  background-color: #3a4f65;
+  transform: translateY(-1px);
+}
+
+.inventory-wrapper {
+  display: block;
+  max-width: 1000px;   
+  margin-left: 0;     
+  margin-right: 0;
+  padding-left: 0;
+}
+
+#stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  justify-content: flex-start;  
+}
+
+/* ===========================
+   Filters
+   =========================== */
+#inventory-root > div:first-child {
+  display: flex;
+  gap: 0px; 
+  margin-top: 5px !important;
+  padding-top: 5px !important;
+  margin-bottom: 10px;
+  max-width: 900px;
+}
+
+#search-inventory {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+}
+
+#filter-lab,
+#filter-condition {
+  min-width: 150px;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+  margin-left: 8px; 
+}
+
+#filter-condition { min-width: 180px; }
+
+#search-inventory:focus,
+#filter-lab:focus,
+#filter-condition:focus {
+  border-color: #2563eb;
+}
+
+/* ===========================
+   Inventory Table
+   =========================== */
+.inventory-table-wrapper {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;  
+}
+
+/* Table Header */
+.inventory-table thead {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+.inventory-table thead th {
+  position: sticky;
+  top: 0;
+  background: #2D3E50;
+  color: #fff;
+  padding: 8px 10px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
+  z-index: 5;
+}
+
+/* Rounded header corners */
+.inventory-table thead tr th:first-child {
+  border-top-left-radius: 8px;
+}
+.inventory-table thead tr th:last-child {
+  border-top-right-radius: 8px;
+}
+
+/* Scrollable Body */
+.inventory-table tbody {
+  display: block;
+  max-height: 400px;
+  overflow-y: auto;
+  width: 100%;
+}
+.inventory-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Table Cells */
+.inventory-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+  color: #000;
+  overflow-wrap: anywhere;
+}
+
+.inventory-table tbody tr:nth-child(odd) { background-color: #ffffff; }
+.inventory-table tbody tr:nth-child(even) { background-color: #f2f4f7; }
+.inventory-table tbody tr:hover { background-color: #f1f5f9; }
+
+/* =================================
+   Column Widths (forces alignment)
+   ================================= */
+.inventory-table th:nth-child(1),
+.inventory-table td:nth-child(1) { width: 80px;  text-align: center; }
+
+.inventory-table th:nth-child(2),
+.inventory-table td:nth-child(2) { width: 150px; text-align: center; }
+
+.inventory-table th:nth-child(3),
+.inventory-table td:nth-child(3) { width: 120px; text-align: center; }
+
+.inventory-table th:nth-child(4),
+.inventory-table td:nth-child(4) { width: 120px; text-align: center; }
+
+.inventory-table th:nth-child(5),
+.inventory-table td:nth-child(5) { width: 160px; text-align: left; }
+
+.inventory-table th:nth-child(6),
+.inventory-table td:nth-child(6) { width: 180px; text-align: center; }
+
+/* ===========================
+   Custom Scrollbar Styling
+   =========================== */
+.inventory-table tbody::-webkit-scrollbar {
+  width: 10px;
+}
+
+.inventory-table tbody::-webkit-scrollbar-track {
+  background: #e5e7eb;
+  border-radius: 6px;
+}
+
+.inventory-table tbody::-webkit-scrollbar-thumb {
+  background-color: #2D3E50;
+  border-radius: 6px;
+  border: 2px solid #e5e7eb;
+}
+
+.inventory-table tbody::-webkit-scrollbar-thumb:hover {
+  background-color: #3a4f65;
+}
+
+/* Firefox */
+.inventory-table tbody {
+  scrollbar-width: thin;
+  scrollbar-color: #2D3E50 #e5e7eb;
+}
+
+
+/* ===========================
+   Condition Colors
+   =========================== */
+.condition-good { color: #16a34a !important; font-weight: bold; }
+.condition-damaged { color: #dc2626 !important; font-weight: bold; }
+.condition-for-maintenance { color: #eab308 !important; font-weight: bold; }
+.condition-for-replacement { color: #9333ea !important; font-weight: bold; }
+.condition-unknown { color: #000 !important; font-weight: 600; }
+
+/* ===========================
+   Action Buttons in Table
+   =========================== */
+.actions-cell {
+  white-space: nowrap;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.inventory-table td.actions-cell button,
+.modal table.inventory-table td.actions-cell button,
+#trash-tbody td.actions-cell button {
+  background-color: #2D3E50;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 10px;
+  transition: background 0.3s ease, transform 0.1s ease;
+}
+.inventory-table td.actions-cell button:hover,
+.modal table.inventory-table td.actions-cell button:hover,
+#trash-tbody td.actions-cell button:hover {
+  filter: brightness(0.9);
+  transform: translateY(-1px);
+}
+
+/* QR Button */
+button.qr-btn {
+  background-color: #2D3E50 !important;
+  color: #fff !important;
+}
+
+/* ===========================
+   Modal Styling
+   =========================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow: auto;
+}
+
+.modal {
+  background-color: white;
+  padding: 25px 30px;
+  border-radius: 12px;
+  width: 95%;
+  max-width: 1200px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.2);
+  animation: fadeInModal 0.3s ease forwards;
+  color: #000;
+  text-align: left;
+  overflow-x: auto;
+}
+.modal h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-weight: 700;
+  font-size: 20px;
+  text-align: center;
+}
+
+/* Modal Sizes */
+.modal.modal--small { max-width: 800px; width: 80%; }
+.modal.modal--large { width: 65vw; max-width: 1000px; max-height: 95vh; }
+
+/* Modal Forms */
+.modal form { display: flex; flex-direction: column; gap: 6px; }
+.modal label { font-weight: 600; font-size: 14px; color: #333; }
+.modal input[type="text"],
+.modal select {
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+}
+.modal input[type="text"]:focus,
+.modal select:focus { border-color: #2563eb; }
+
+/* Modal Buttons */
+.modal button[type="submit"] {
+  margin-top: 10px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 16px;
+}
+.modal button[type="submit"]:hover { background-color: #1d4ed8; }
+
+.modal button[type="button"],
+.modal button#close-trash-btn,
+.modal button#close-qr-btn,
+.modal button#close-edit-btn,
+.modal button#close-modal-btn {
+  margin-top: 10px;
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+.modal button:hover {
+  background-color: #4b5563;
+  transform: translateY(-1px);
+}
+
+/* ===========================
+   Trash Modal
+   =========================== */
+#trash-tbody td.actions-cell {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 10px;
+}
+
+.modal.modal--large table.inventory-table {
+  table-layout: auto !important;
+}
+.modal.modal--large table.inventory-table th,
+.modal.modal--large table.inventory-table td {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+/* Column widths */
+.modal.modal--large table.inventory-table th:nth-child(1),
+.modal.modal--large table.inventory-table td:nth-child(1) { width: 22%; }
+.modal.modal--large table.inventory-table th:nth-child(2),
+.modal.modal--large table.inventory-table td:nth-child(2) { width: 15%; text-align: center; }
+.modal.modal--large table.inventory-table th:nth-child(3),
+.modal.modal--large table.inventory-table td:nth-child(3) { width: 15%; text-align: center; }
+.modal.modal--large table.inventory-table th:nth-child(4),
+.modal.modal--large table.inventory-table td:nth-child(4) { width: 20%; text-align: center; white-space: nowrap; }
+.modal.modal--large table.inventory-table th:nth-child(5),
+.modal.modal--large table.inventory-table td:nth-child(5) { text-align: center !important; }
+
+/* ===========================
+   Sub-Modal Item Choices
+   =========================== */
+.sub-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+.option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.option-card:hover {
+  border-color: #007bff;
+  background: #eef6ff;
+  transform: scale(1.05);
+}
+.option-icon { font-size: 28px; margin-bottom: 8px; }
+.option-name { font-size: 14px; font-weight: 600; text-align: center; }
+
+.item-choice-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  padding: 10px 14px;
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.item-choice-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* ===========================
+   Animations
+   =========================== */
+@keyframes fadeInModal {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================
+   Layout: Stats + Table (Left) | Chart (Right)
+   ============================================= */
+.layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.left-panel {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column; 
+  gap: 5px; 
+  margin-left: 40px;
+  align-items: center;
+}
+
+#chart-container {
+  width: 100%;
+  max-width: 350px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#inventory-pie {
+  width: 100% !important;
+  max-width: 300px;
+  height: 250px !important;
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width: 900px) {
+  .layout {
+    flex-direction: column-reverse;
+  }
+  .right-panel {
+    width: 100%;
+  }
+  #chart-container {
+    max-width: none;
+    width: 100%;
+  }
+  #inventory-pie {
+    max-width: 100%;
+    height: 220px !important;
+  }
+}
+
+#location-chart-container {
+  width: 100%;
+  max-width: 350px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px; 
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+#location-bar {
+  width: 100% !important;
+  max-width: 300px;
+  height: 250px !important;
+}
+
+#chart-container,
+#location-chart-container {
+  width: 100%;
+  max-width: 350px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===========================
+   Condition Badges
+   =========================== */
+.condition-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px; /* pill shape */
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff !important; 
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Transparent backgrounds */
+.condition-good {
+  background-color: rgba(22, 163, 74, .70); /* Green */
+}
+
+.condition-damaged {
+  background-color: rgba(220, 38, 38, .70); /* Red */
+}
+
+.condition-for-maintenance {
+  background-color: rgba(234, 179, 8, .70); /* Amber */
+}
+
+.condition-for-replacement {
+  background-color: rgba(147, 51, 234, .70); /* Purple */
+}
+
+.condition-new {
+  background-color: rgba(121, 217, 255, 0.7); /* Purple */
+}
+
+.condition-unknown {
+  background-color: rgb(255, 255, 255); /* Neutral gray */
+}
+
+/* ===========================
+   Latest Items Section
+   =========================== */
+#latest-items-container {
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  margin-top: 20px;
+}
+
+#latest-items-container h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #2D3E50;
+  text-align: center;
+}
+
+#latest-items-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 87px;  
+  overflow-y: auto;   
+}
+
+#latest-items-list li {
+  padding: 6px 0;
+  font-size: 14px;
+  color: #2D3E50;
+  border-bottom: 1px solid #2d3e501e;
+}
+
+#latest-items-list li:last-child {
+  border-bottom: none;
+}
+
+#latest-items-list time {
+  font-weight: 600;
+  color: #2D3E50; 
+  margin-right: 8px;
+}
+
+/* ===========================
+   Dead Added Modal
+   =========================== */
+#dateAddedModal .modal {
+  text-align: center;
+}
+#dateAddedDescription {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+/* ===========================
+   Custom Scrollbar Styling
+   =========================== */
+.inventory-table-wrapper::-webkit-scrollbar,
+#latest-items-list::-webkit-scrollbar {
+  width: 10px;   
+  height: 10px;  
+}
+.inventory-table-wrapper::-webkit-scrollbar-track,
+#latest-items-list::-webkit-scrollbar-track {
+  background: #e5e7eb;  /* light gray track */
+  border-radius: 6px;
+}
+.inventory-table-wrapper::-webkit-scrollbar-thumb,
+#latest-items-list::-webkit-scrollbar-thumb {
+  background-color: #2D3E50; 
+  border-radius: 6px;
+  border: 2px solid #e5e7eb; 
+}
+.inventory-table-wrapper::-webkit-scrollbar-thumb:hover,
+#latest-items-list::-webkit-scrollbar-thumb:hover {
+  background-color: #3a4f65; 
+}
+
+/* ===========================
+   Automate Modal Content
+   =========================== */
+.close-automate-btn {
+  background-color: #2D3E50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.close-automate-btn:hover {
+  background-color: #1e293b;
+  transform: scale(1.05);
+}
+
+.close-automate-btn:active {
+  transform: scale(0.97);
+}
+
+#cursor {
+  display: inline-block;
+  opacity: 1;
+}
+
+#cursor.blink {
+  animation: blink-caret 0.8s steps(1) infinite;
+}
+
+@keyframes blink-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+#automate-summary-text u {
+  text-decoration: underline;
+}
+
+#automate-summary-text strong {
+  font-weight: 700;
+}
+
+.inventory-table a {
+  color: #007bff !important;
+  text-decoration: underline !important;
+  cursor: pointer !important;
+}
+.inventory-table a:hover {
+  color: #0056b3 !important;
+}
+
+.clickable-item {
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.clickable-item:hover { color: #0056b3; }
+
+
+/* Firefox support */
+.inventory-table-wrapper,
+#latest-items-list {
+  scrollbar-width: thin;
+  scrollbar-color: #2D3E50 #e5e7eb;
+}
