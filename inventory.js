@@ -130,7 +130,7 @@ async function fetchInventory() {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${item.id.slice(-6)}</td>
-        <td><a href="https://reddjoseph.github.io/IMS_STI-NLP/item.html?id=${item.id}"
+        <td><a href="https://michael081503.github.io/STIdCL_IMS/item.html?id=${item.id}"
                target="_blank" style="color:#000;text-decoration:none;">
               ${item.Name || "Unnamed"}</a></td>
         <td>${item.Laboratory || "Unknown"}</td>
@@ -703,7 +703,7 @@ function showQRModal(itemId) {
     const qrContainer = document.getElementById("qrCodeContainer");
     qrContainer.innerHTML = "";
     new QRCode(qrContainer, {
-      text: `https://reddjoseph.github.io/IMS_STI-NLP/item.html?id=${itemId}`,
+      text: `https://michael081503.github.io/STIdCL_IMS/item.html?id=${itemId}`,
       width: 200,
       height: 200,
       colorDark: "#000000",
