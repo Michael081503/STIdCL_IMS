@@ -84,6 +84,8 @@ function waitForElement(selector, timeout = 2500) {
     const ticketItem = document.getElementById("tc-ticketItem");
     const ticketImagesInput = document.getElementById("tc-ticketImages"); // NEW file input
     const searchInput = document.getElementById("tc-searchInput");
+    const statusFilter = document.getElementById("tc-statusFilter");
+
     const prevPageBtn = document.getElementById("tc-prevPage");
     const nextPageBtn = document.getElementById("tc-nextPage");
 
@@ -224,6 +226,9 @@ function waitForElement(selector, timeout = 2500) {
     const pageSize = 5;
 
     const currentRole = await getUserRole();
+    const faqSection = document.querySelector(".tickets-faq");
+    const adminStatsContainer = document.getElementById("admin-stats-container");
+
     let maintenanceUsers = [];
 
     if (currentRole === "Admin") {
@@ -234,6 +239,97 @@ function waitForElement(selector, timeout = 2500) {
       handlerTh.textContent = "Handler";
       headerRow.appendChild(handlerTh);
     }
+
+    if (currentRole === "Admin") {
+    // Hide FAQ
+    if (faqSection) faqSection.style.display = "none";
+    if (adminStatsContainer) adminStatsContainer.style.display = "block";
+
+    // Function to update ticket counts
+    function updateAdminStats() {
+      const total = tickets.length;
+      const counts = {
+        pending: 0,
+        assigned: 0,
+        urgent: 0,
+        review: 0,
+        solved: 0,
+        unsolved: 0
+      };
+
+      tickets.forEach(t => {
+        const status = (t.status || "pending").toLowerCase();
+        if (counts[status] !== undefined) counts[status]++;
+      });
+
+      const html = `
+      <div class="stat-box total" data-status="all">
+        <strong>${total}</strong>
+        <span>Total Tickets</span>
+      </div>
+      <div class="stat-box pending" data-status="pending">
+        <strong>${counts.pending}</strong>
+        <span>Pending</span>
+      </div>
+      <div class="stat-box assigned" data-status="assigned">
+        <strong>${counts.assigned}</strong>
+        <span>Assigned</span>
+      </div>
+      <div class="stat-box urgent" data-status="urgent">
+        <strong>${counts.urgent}</strong>
+        <span>Urgent</span>
+      </div>
+      <div class="stat-box review" data-status="review">
+        <strong>${counts.review}</strong>
+        <span>Review</span>
+      </div>
+      <div class="stat-box solved" data-status="solved">
+        <strong>${counts.solved}</strong>
+        <span>Solved</span>
+      </div>
+      <div class="stat-box unsolved" data-status="unsolved">
+        <strong>${counts.unsolved}</strong>
+        <span>Unsolved</span>
+      </div>
+    `;
+
+      const grid = document.getElementById("adminStatsGrid");
+      grid.innerHTML = html;
+
+      grid.querySelectorAll(".stat-box").forEach(box => {
+        box.addEventListener("click", () => {
+          const status = box.dataset.status;
+
+          // Highlight selected card
+          grid.querySelectorAll(".stat-box").forEach(b => b.classList.remove("active"));
+          box.classList.add("active");
+
+          // Sync dropdown filter (if it exists)
+          if (statusFilter) {
+            statusFilter.value = status === "all"
+              ? "all"
+              : status.charAt(0).toUpperCase() + status.slice(1);
+          }
+
+          // Apply filter to tickets
+          if (status === "all") {
+            filteredTickets = [...tickets];
+          } else {
+            filteredTickets = tickets.filter(
+              t => (t.status || "").toLowerCase() === status
+            );
+          }
+
+          currentPage = 1;
+          renderTickets();
+        });
+      });
+    }
+
+
+    updateAdminStats();
+  }
+
 
     function paginate(array, pageNumber, size) {
       const start = (pageNumber - 1) * size;
@@ -555,19 +651,48 @@ function waitForElement(selector, timeout = 2500) {
     }
 
     // Search
-    searchInput.addEventListener("input", () => {
+    function applyFilters() {
       const q = searchInput.value.toLowerCase();
-      filteredTickets = tickets.filter(
-        (t) =>
+      const selectedStatus = statusFilter.value.toLowerCase();
+
+      filteredTickets = tickets.filter((t) => {
+        const matchesText =
           (t.id && t.id.toLowerCase().includes(q)) ||
           (t.item && t.item.toLowerCase().includes(q)) ||
           (t.concern && t.concern.toLowerCase().includes(q)) ||
           (t.description && t.description.toLowerCase().includes(q)) ||
-          (t.status && t.status.toLowerCase().includes(q))
-      );
+          (t.status && t.status.toLowerCase().includes(q));
+
+        const matchesStatus =
+          selectedStatus === "all" ||
+          (t.status && t.status.toLowerCase() === selectedStatus);
+
+        return matchesText && matchesStatus;
+      });
+
       currentPage = 1;
       renderTickets();
-    });
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    statusFilter.addEventListener("change", applyFilters);
+    statusFilter.addEventListener("change", () => {
+    if (currentRole === "Admin") {
+      const grid = document.getElementById("adminStatsGrid");
+      if (!grid) return;
+
+      grid.querySelectorAll(".stat-box").forEach(b => b.classList.remove("active"));
+      const val = statusFilter.value.toLowerCase();
+      const matchBox = grid.querySelector(`.stat-box[data-status="${val}"]`);
+      if (matchBox) matchBox.classList.add("active");
+      else if (val === "all") {
+        const totalBox = grid.querySelector('.stat-box[data-status="all"]');
+        if (totalBox) totalBox.classList.add("active");
+      }
+    }
+  });
+
+
 
     prevPageBtn.addEventListener("click", () => {
       if (currentPage > 1) {
@@ -709,23 +834,30 @@ function waitForElement(selector, timeout = 2500) {
 
     // Bind button to open item modal
     const selectItemBtn = document.getElementById("tc-selectItemBtn");
-if (selectItemBtn) {
-  selectItemBtn.addEventListener("click", async () => {
-    try {
-      const items = await getInventoryItems();
-      if (!items || items.length === 0) {
-        alert("No inventory items found.");
-        return;
-      }
-      showItemSelectionModal(items);
-    } catch (err) {
-      console.error("Failed to load items:", err);
-      alert("Error loading items. See console for details.");
+    if (selectItemBtn) {
+      selectItemBtn.replaceWith(selectItemBtn.cloneNode(true));
+      const newSelectItemBtn = document.getElementById("tc-selectItemBtn");
+
+      newSelectItemBtn.addEventListener("click", async () => {
+        const existingOverlay = document.querySelector(".modal-overlay");
+        if (existingOverlay) existingOverlay.remove();
+
+        try {
+          const items = await getInventoryItems();
+          if (!items || items.length === 0) {
+            alert("No inventory items found.");
+            return;
+          }
+          showItemSelectionModal(items);
+        } catch (err) {
+          console.error("Failed to load items:", err);
+          alert("Error loading items. See console for details.");
+        }
+      });
+    } else {
+      console.warn("⚠️ Select Item button not found in DOM yet.");
     }
-  });
-} else {
-  console.warn("⚠️ Select Item button not found in DOM yet.");
-}
+
 
 
     // ========== Submit Ticket (with multi-image upload) ==========
@@ -941,32 +1073,77 @@ window.showTicketsAutomateModal = function () {
     This provides administrators with a clear snapshot of the current ticket distribution and workload.
   `.replace(/\s+/g, ' ').trim();
 
-  // create modal overlay
-  const overlay = document.createElement('div');
-  overlay.id = 'tickets-automate-overlay';
-  overlay.className = 'tc-modal';
-  overlay.style.display = 'flex';
+  // ⚠️ Alert messages for pending and urgent tickets
+let alertsHTML = "";
+console.log("[Automate] pending:", pending, "urgent:", urgent);
 
-  const content = document.createElement('div');
-  content.className = 'tc-modal__content';
-  content.innerHTML = `
-    <h3 style="text-align:center; font-weight:600;">🤖 Automated Tickets Summary</h3>
-    <div id="tickets-automate-text" style="font-size:15px; line-height:1.6; text-align:justify; color:#111;"></div>
-    <div id="tickets-qa-container" style="margin-top:15px; font-size:15px; line-height:1.6; text-align:justify;"></div>
-    <div id="tickets-automate-qa" style="margin-top:20px; display:none;">
-      <input id="tickets-qa-input" type="text" placeholder="Ask something..." 
-        style="padding:8px; width:70%; border-radius:6px; border:1px solid #ccc; font-size:0.9rem;">
-      <button id="tickets-qa-btn" class="ask-btn">
-        <span class="btn-text">Ask</span>
-        <span class="spinner" style="display:none;"></span>
-      </button>
-    </div>
-    <div style="text-align:center; margin-top:20px;">
-      <button id="close-tickets-automate-btn" class="close-automate-btn">Close</button>
+if (pending > 0) {
+  alertsHTML += `
+    <div class="ticket-alert warning" style="background:#fff7e6;color:#b45309;border-left:4px solid #facc15;margin-bottom:10px;padding:10px;border-radius:6px;">
+      <span class="alert-icon" style="font-size:1.1rem;">⚠️</span>
+      You have <strong>${pending}</strong> pending ticket${pending > 1 ? "s" : ""}, please take actions immediately.
     </div>
   `;
-  overlay.appendChild(content);
-  document.body.appendChild(overlay);
+}
+if (urgent > 0) {
+  alertsHTML += `
+    <div class="ticket-alert danger" style="background:#fee2e2;color:#b91c1c;border-left:4px solid #ef4444;margin-bottom:10px;padding:10px;border-radius:6px;">
+      <span class="alert-icon" style="font-size:1.1rem;">🚨</span>
+      You have <strong>${urgent}</strong> current urgent unresolved ticket${urgent > 1 ? "s" : ""}, please handle this issue as soon as possible.
+    </div>
+  `;
+}
+
+console.log("[Automate] alertsHTML generated:", alertsHTML);
+
+// ✅ Build and show modal
+const overlay = document.createElement("div");
+overlay.id = "tickets-automate-overlay";
+overlay.className = "tc-modal";
+overlay.style.display = "flex";
+overlay.style.alignItems = "center";
+overlay.style.justifyContent = "center";
+overlay.style.background = "rgba(0,0,0,0.4)";
+overlay.style.zIndex = "9999";
+
+const content = document.createElement("div");
+content.className = "tc-modal__content";
+content.style.maxWidth = "650px";
+content.style.width = "90%";
+content.style.background = "#fff";
+content.style.borderRadius = "10px";
+content.style.padding = "20px";
+content.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
+content.style.overflowY = "auto";
+content.style.maxHeight = "80vh";
+content.style.position = "relative";
+
+content.innerHTML = `
+  <h3 style="text-align:center; font-weight:600; margin-bottom:10px;">🤖 Automated Tickets Summary</h3>
+  ${alertsHTML ? `<div id="tickets-automate-alerts">${alertsHTML}</div>` : `<div style="color:#666;font-size:0.9rem;">No pending or urgent alerts.</div>`}
+  <hr style="margin:12px 0; border:none; border-top:1px solid #ddd;">
+  <div id="tickets-automate-text" style="font-size:15px; line-height:1.6; text-align:justify; color:#111;"></div>
+
+  <div id="tickets-qa-container" style="margin-top:15px; font-size:15px; line-height:1.6; text-align:justify;"></div>
+  <div id="tickets-automate-qa" style="margin-top:20px; display:none;">
+    <input id="tickets-qa-input" type="text" placeholder="Ask something..."
+      style="padding:8px; width:70%; border-radius:6px; border:1px solid #ccc; font-size:0.9rem;">
+    <button id="tickets-qa-btn" class="ask-btn">
+      <span class="btn-text">Ask</span>
+      <span class="spinner" style="display:none;"></span>
+    </button>
+  </div>
+  <div style="text-align:center; margin-top:20px;">
+    <button id="close-tickets-automate-btn" class="close-automate-btn">Close</button>
+  </div>
+`;
+
+overlay.appendChild(content);
+document.body.appendChild(overlay);
+
+console.log("[Automate] modal appended:", overlay);
+
+
 
   // helper: try to extract createdAt string from a row (many fallbacks)
   function extractCreatedAtFromRow(row) {
@@ -1234,7 +1411,7 @@ window.showTicketsAutomateModal = function () {
       }
 
       .ask-btn {
-        background-color: #2D3E50;    /* 🔹 Same as close button */
+        background-color: #2D3E50;    
         color: #fff;
         border: none;
         padding: 8px 12px;
@@ -1249,9 +1426,31 @@ window.showTicketsAutomateModal = function () {
       }
       .ask-btn:hover {
         transform: scale(1.05);
-        background-color: #3a506b;   /* 🔹 Same hover color */
+        background-color: #3a506b;  
       }
-
+      .ticket-alert {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        padding: 10px 14px;
+        border-radius: 8px;
+      }
+      .ticket-alert .alert-icon {
+        font-size: 1.1rem;
+      }
+      .ticket-alert.warning {
+        background: #fff7e6;
+        color: #b45309;
+        border-left: 4px solid #facc15;
+      }
+      .ticket-alert.danger {
+        background: #fee2e2;
+        color: #b91c1c;
+        border-left: 4px solid #ef4444;
+      }
       .spinner {
         width: 16px;
         height: 16px;

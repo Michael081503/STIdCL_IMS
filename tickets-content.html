@@ -9,12 +9,25 @@
 <body>
   <div class="tickets-wrapper">
     <!-- Top Controls -->
-    <div class="tickets-controls">
-      <button id="tc-createTicketBtn" class="btn-primary">Create New Ticket</button>
-      <div class="tickets-search">
-        <input type="text" id="tc-searchInput" placeholder="Search tickets..." />
-      </div>
+  <div class="tickets-controls">
+    <button id="tc-createTicketBtn" class="btn-primary">Create New Ticket</button>
+    
+    <div class="tickets-search">
+      <input type="text" id="tc-searchInput" placeholder="Search tickets..." />
+      
+      <!-- STATUS FILTER -->
+      <select id="tc-statusFilter" class="status-filter">
+        <option value="all">All Statuses</option>
+        <option value="Pending">Pending</option>
+        <option value="Assigned">Assigned</option>
+        <option value="Urgent">Urgent</option>
+        <option value="Review">Review</option>
+        <option value="Solved">Solved</option>
+        <option value="Unsolved">Unsolved</option>
+      </select>
     </div>
+  </div>
+
 
     <!-- Tickets Table -->
     <table class="tickets-table">
@@ -69,6 +82,15 @@
       </div>
     </div>
   </div>
+
+    <!-- Admin Stats Container -->
+  <div id="admin-stats-container" class="admin-stats" style="display: none;">
+    <h3>Ticket Overview</h3>
+    <div id="adminStatsGrid" class="admin-stats-grid">
+      <!-- Dynamic ticket stats -->
+    </div>
+  </div>
+
 
   <!-- Create Ticket Modal -->
   <div id="tc-ticketModal" class="tc-modal" aria-hidden="true">

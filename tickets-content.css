@@ -39,7 +39,7 @@ body {
 }
 .tickets-search input:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: #2D3E50;
 }
 
 /* ============================ */
@@ -117,7 +117,7 @@ body {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  background: #2563eb;
+  background: #2D3E50;
   color: #fff;
   transition: background 0.2s ease, transform 0.1s ease;
 }
@@ -142,7 +142,7 @@ body {
   font-size: 0.95rem;
   font-weight: 600;
   color: #fff;
-  background-color: #2563eb;
+  background-color: #2D3E50;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -188,7 +188,7 @@ body {
   font-size: 0.9rem;
   font-weight: 600;
   color: #fff;
-  background-color: #2563eb;
+  background-color: #2D3E50;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -298,14 +298,14 @@ body {
   top: 18px;
   width: 10px;
   height: 10px;
-  background: #2563eb;
+  background: #2D3E50;
   border-radius: 50%;
   box-shadow: 0 0 0 3px #dbeafe;
 }
 .feedback-entry strong {
   display: block;
   font-weight: 600;
-  color: #2563eb;
+  color: #2D3E50;
   margin-bottom: 4px;
 }
 .feedback-entry .date {
@@ -349,7 +349,7 @@ body {
 .tickets-faq h3 {
   margin-bottom: 15px;
   font-size: 1.2rem;
-  color: #2563eb;
+  color: #2D3E50;
 }
 .faq-item {
   border-top: 1px solid #e5e7eb;
@@ -372,7 +372,7 @@ body {
   align-items: center;
 }
 .faq-question:hover {
-  color: #2563eb;
+  color: #2D3E50;
 }
 .faq-icon {
   font-weight: bold;
@@ -397,7 +397,7 @@ body {
 }
 .faq-item.active .faq-icon {
   transform: rotate(45deg);
-  color: #2563eb;
+  color: #2D3E50;
 }
 
 /* ============================ */
@@ -413,7 +413,7 @@ body {
   min-width: 130px;
 }
 .assign-select:focus {
-  border-color: #2563eb;
+  border-color: #2D3E50;
   outline: none;
 }
 
@@ -440,7 +440,7 @@ body {
   padding: 6px 10px;
   font-size: 0.85rem;
   color: #fff;
-  background-color: #2563eb;
+  background-color: #2D3E50;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -491,7 +491,7 @@ body {
 /*   REVIEW MODAL & HANDLER */
 /* ============================ */
 .review-handler {
-  color: #2563eb;
+  color: #2D3E50;
   cursor: pointer;
   font-weight: 600;
   transition: color 0.2s ease;
@@ -733,7 +733,7 @@ body {
 /* Ticket creation handler         */
 /* =============================== */
 .handler-clickable {
-  color: #2563eb;
+  color: #2D3E50;
   text-decoration: underline;
   cursor: pointer;
   font-weight: 500;
@@ -789,7 +789,7 @@ body {
   font-size: 0.9rem;
   font-weight: 500;
   color: #fff;
-  background-color: #2563eb;
+  background-color: #2D3E50;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -804,7 +804,7 @@ body {
 
 #tc-selectedItemLabel {
   font-size: 0.9rem;
-  color: #2563eb;
+  color: #2D3E50;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -826,7 +826,7 @@ body {
 }
 
 .item-group-title {
-  color: #2563eb;
+  color: #2D3E50;
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 10px;
@@ -853,7 +853,7 @@ body {
 }
 
 .item-card:hover {
-  background-color: #2563eb;
+  background-color: #2D3E50;
   color: #fff;
   transform: scale(1.05);
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
@@ -885,7 +885,7 @@ body {
 /* NOTE BUTTON (View Description) */
 /* ============================== */
 .note-btn {
-  background-color: #2563eb;
+  background-color: #2D3E50;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -908,6 +908,101 @@ body {
 }
 
 #fullDescriptionText strong {
-  color: #2563eb;
+  color: #2D3E50;
   font-weight: 600;
 }
+
+/* =============================== */
+/* Admin Ticket Stats Dashboard */
+/* =============================== */
+.admin-stats {
+  max-width: 1000px;
+  margin: 30px auto;
+  padding: 25px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.admin-stats h3 {
+  color: #2D3E50;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #f9fafb;
+  padding: 18px 12px;
+  border-radius: 10px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stat-box strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2D3E50;
+}
+
+.stat-box span {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #2D3E50;
+  text-transform: capitalize;
+}
+
+/* Hover & Active Effects */
+.stat-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.stat-box.active {
+  outline: 2px solid #2D3E50;
+  background-color: #eff6ff;
+  transform: scale(1.03);
+}
+
+.stat-box.total { background: #dbeafe; color: #1e3a8a; }
+.stat-box.pending { background: #fef9c3; color: #92400e; }
+.stat-box.assigned { background: #e0f2fe; color: #075985; }
+.stat-box.urgent { background: #fee2e2; color: #991b1b; }
+.stat-box.review { background: #f3e8ff; color: #6b21a8; }
+.stat-box.solved { background: #dcfce7; color: #166534; }
+.stat-box.unsolved { background: #fee2e2; color: #991b1b; }
+
+
+/* ============================ */
+/*   STATUS FILTER DROPDOWN */
+/* ============================ */
+.status-filter {
+  margin-left: 10px;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background: #fff;
+  color: #111;
+  transition: border-color 0.2s ease;
+}
+.status-filter:focus {
+  border-color: #2D3E50;
+  outline: none;
+}
+

@@ -453,7 +453,11 @@ function showAddItemForm() {
         <option value="Computers">Computers</option>
         <option value="Electronics">Electronics</option>
         <option value="Appliances">Appliances</option>
+        <option value="Facility">Facility</option>
+        <option value="Furniture">Furniture</option>
+        <option value="Equipments">Equipments</option>
         <option value="Kitchen">Kitchen</option>
+        <option value="Others">Others</option>
       </select>
 
       <label>Location:</label>
@@ -461,6 +465,7 @@ function showAddItemForm() {
       <select id="building-select" required>
         <option value="">Select Building</option>
         <option value="Main Building">Main Building</option>
+        <option value="Pool Side">Pool Side</option>
         <option value="Annex">Annex</option>
       </select>
 
@@ -489,43 +494,69 @@ function showAddItemForm() {
   const categorySelect = modal.querySelector("#item-category");
   const buildingSelect = modal.querySelector("#building-select");
 
-  // ✅ Category selection (sub-modal with icons)
+  // Category selection (sub-modal with icons)
   categorySelect.addEventListener("change", () => {
-    const category = categorySelect.value;
+    let category = categorySelect.value.trim();
     nameInput.value = "";
     delete nameInput.dataset.value;
 
-    let options = [];
-    if (category === "Computers") {
-      options = [
-        { name: "Intel PC", icon: "💻" },
-        { name: "Ryzen PC", icon: "🖥️" }
-      ];
+    nameInput.disabled = true;
+    nameInput.placeholder = "Select from list...";
+
+    if (category === "Facility") category = "Facilities";
+
+    if (category === "Others") {
+      nameInput.disabled = false;
+      nameInput.placeholder = "Enter item name manually...";
+      nameInput.focus();
+      return;
     }
-    if (category === "Electronics") {
-      options = [
+
+    const optionsMap = {
+      Facilities: [
+        { name: "Whiteboard", icon: "🧑‍🏫" },
+        { name: "Aircon", icon: "❄️" },
+        { name: "Lightbulb", icon: "💡" },
+        { name: "Fan", icon: "🌀" }
+      ],
+      Equipments: [
+        { name: "Remote control", icon: "🎛️" },
+        { name: "HDMI", icon: "🔌" },
+        { name: "Fire Extinguisher", icon: "🧯" }
+      ],
+      Furniture: [
+        { name: "Teachers table", icon: "🪑" },
+        { name: "Drawing table", icon: "✏️" },
+        { name: "Chair", icon: "🪑" }
+      ],
+      Computers: [
+        { name: "Intel PC", icon: "💻" },
+        { name: "Ryzen PC", icon: "🖥️" },
+        { name: "Mouse", icon: "🖱️" },
+        { name: "Keyboard", icon: "⌨️" }
+      ],
+      Electronics: [
         { name: "Projector", icon: "📽️" },
         { name: "Modem", icon: "🌐" },
-        { name: "Switch", icon: "🔀" }
-      ];
-    }
-    if (category === "Appliances") {
-      options = [
+        { name: "Switch", icon: "🔀" },
+        { name: "Television", icon: "🖥️" }
+      ],
+      Appliances: [
         { name: "Chair", icon: "🪑" },
         { name: "Aircon", icon: "❄️" },
         { name: "Table", icon: "📏" }
-      ];
-    }
-    if (category === "Kitchen") {
-      options = [
+      ],
+      Kitchen: [
         { name: "Microwave", icon: "🍲" },
         { name: "Coffee Maker", icon: "☕" },
         { name: "Fridge", icon: "🧊" }
-      ];
-    }
+      ]
+    };
 
+    const options = optionsMap[category] || [];
     if (options.length === 0) return;
 
+    // build sub-modal
     const subOverlay = document.createElement("div");
     subOverlay.className = "modal-overlay";
 
@@ -538,7 +569,9 @@ function showAddItemForm() {
     subModal.innerHTML = `
       <h3>Select ${category} Item</h3>
       <div id="sub-options"></div>
-      <button type="button" id="sub-close">Cancel</button>
+      <div style="text-align:center; margin-top:12px;">
+        <button type="button" id="sub-close">Cancel</button>
+      </div>
     `;
 
     subOverlay.appendChild(subModal);
@@ -556,10 +589,12 @@ function showAddItemForm() {
         const cell = document.createElement("td");
         const btn = document.createElement("button");
         btn.className = "item-choice-btn";
+        btn.type = "button";
         btn.innerHTML = `${opt.icon} ${opt.name}`;
         btn.addEventListener("click", () => {
           nameInput.value = opt.name;
           nameInput.dataset.value = opt.name;
+          nameInput.disabled = true; 
           subOverlay.remove();
         });
         cell.appendChild(btn);
@@ -574,7 +609,7 @@ function showAddItemForm() {
     subModal.querySelector("#sub-close").addEventListener("click", () => subOverlay.remove());
   });
 
-  // ✅ Building selection → Location sub-modal
+  // Building selection → Location sub-modal
   buildingSelect.addEventListener("change", () => {
     const building = buildingSelect.value;
     labInput.value = "";
@@ -587,10 +622,12 @@ function showAddItemForm() {
       options = [
         "Laboratory 1", "Laboratory 2", "Laboratory 3", "Laboratory 4",
         "Room 201", "Room 202", "Room 203", "Room 204",
-        "Room 401", "Room 402", "Room 403", "Library", "Faculty"
+        "Room 401", "Room 402", "Room 403", "Library", "Faculty", "Tech Lab", "Basement 1", "Basement 2"
       ];
     } else if (building === "Annex") {
       options = ["Room 201", "Room 202", "Room 203", "Room 204", "Auditorium"];
+    } else if (building === "Pool Side") {
+      options = ["FH 101", "FH 102", "FH 103", "FH 104"];
     }
 
     const subOverlay = document.createElement("div");
@@ -798,14 +835,38 @@ window.showAutomateModal = function () {
   const maintenanceItems = Number(document.getElementById("stat-maintenance")?.textContent || "0");
   const replacementItems = Number(document.getElementById("stat-replacement")?.textContent || "0");
 
+  // compute
+  const rows = Array.from(document.querySelectorAll("#inventory-root tr"));
+  const itemCounts = {};
+
+  rows.forEach(row => {
+    const nameCell = row.cells[1];
+    if (!nameCell) return;
+    const itemName = nameCell.textContent.trim();
+    if (!itemName) return;
+    itemCounts[itemName] = (itemCounts[itemName] || 0) + 1;
+  });
+
+  const itemSummary = Object.entries(itemCounts)
+    .map(([name, count]) => `<li>${name}: <strong>${count}</strong></li>`)
+    .join("");
+
+  // build full summary
   const summaryHTML = `
     As of now, the inventory contains a <u>total</u> of <strong>${total}</strong> items. 
     Among these, <strong>${newItems}</strong> are newly added, 
     <strong>${goodItems}</strong> are in good condition, 
     <strong>${maintenanceItems}</strong> require maintenance, and 
     <strong>${replacementItems}</strong> are marked for replacement. 
+
+    <br><br><strong>📦 Items Summary:</strong>
+    <ul style="margin-top:6px; margin-left:20px; line-height:1.6;">
+      ${itemSummary || "<li>No item data found.</li>"}
+    </ul>
+
     This provides a concise overview of the institution’s asset condition.
   `.replace(/\s+/g, " ").trim();
+
 
   const overlay = document.createElement("div");
   overlay.className = "modal-overlay";
