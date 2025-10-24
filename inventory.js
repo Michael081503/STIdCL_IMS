@@ -467,6 +467,7 @@ function showAddItemForm() {
         <option value="Main Building">Main Building</option>
         <option value="Pool Side">Pool Side</option>
         <option value="Annex">Annex</option>
+        <option value="Others">Others</option>
       </select>
 
       <label>Condition:</label>
@@ -608,12 +609,23 @@ function showAddItemForm() {
 
     subModal.querySelector("#sub-close").addEventListener("click", () => subOverlay.remove());
   });
-
-  // Building selection → Location sub-modal
+  //========================================//
+  // Building selection → Location sub-modal//
+  //========================================//
   buildingSelect.addEventListener("change", () => {
     const building = buildingSelect.value;
     labInput.value = "";
     delete labInput.dataset.value;
+
+    if (building === "Others") {
+      labInput.disabled = false;
+      labInput.placeholder = "Enter custom location...";
+      labInput.focus();
+      return;
+    } else {
+      labInput.disabled = true;
+      labInput.placeholder = "Select building first";
+    }
 
     if (!building) return;
 
@@ -677,14 +689,21 @@ function showAddItemForm() {
     subModal.querySelector("#sub-close-lab").addEventListener("click", () => subOverlay.remove());
   });
 
-  modal.querySelector("#close-modal-btn").addEventListener("click", () => overlay.remove());
 
-  modal.querySelector("#add-item-form").addEventListener("submit", async e => {
+    modal.querySelector("#close-modal-btn").addEventListener("click", () => overlay.remove());
+
+    modal.querySelector("#add-item-form").addEventListener("submit", async e => {
     e.preventDefault();
-    const name = nameInput.dataset.value || "";
-    const lab = labInput.dataset.value || "";
+
+    // ✅ Use .value if manually typed, or .dataset.value if chosen
+    const name = nameInput.value.trim() || nameInput.dataset.value || "";
+    const lab = labInput.value.trim() || labInput.dataset.value || "";
     const condition = modal.querySelector("#item-condition").value;
-    if (!name || !lab || !condition) return alert("Fill all fields");
+
+    if (!name || !lab || !condition) {
+      alert("Please fill all fields");
+      return;
+    }
 
     const fileInput = modal.querySelector("#item-image");
     let imageURL = "";
@@ -713,7 +732,8 @@ function showAddItemForm() {
       alert("❌ Failed to add.");
     }
   });
-}
+
+  }
 
 /* -------------------------
    QR Modal
