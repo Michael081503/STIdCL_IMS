@@ -385,6 +385,25 @@ function waitForElement(selector, timeout = 2500) {
             type: "assignment",
           });
 
+          //notify assign
+          try {
+            const ticketSnap = await getDoc(doc(db, "tickets", ticketId));
+            const ticketData = ticketSnap.exists() ? ticketSnap.data() : null;
+            const ownerId = ticketData?.issuedById || null;
+            if (ownerId) {
+              await addDoc(collection(db, "notifications"), {
+                message: `Your ticket (${ticketData?.item || ticketId}) has been assigned to ${userName}.`,
+                userId: ownerId,
+                ticketId,
+                type: "assignment",
+                createdByRole: "Admin",
+                createdAt: serverTimestamp(),
+              });
+            }
+          } catch (err) {
+            console.warn("Failed to notify ticket owner about assignment:", err);
+          }
+
           alert("Handler assigned successfully!");
           deadlineModal.style.display = "none";
           deadlineModal.setAttribute("aria-hidden", "true");
@@ -542,6 +561,19 @@ function waitForElement(selector, timeout = 2500) {
           if (!ticketId) return;
           try {
             await updateDoc(doc(db, "tickets", ticketId), { status: "Urgent" });
+            //notify
+                const ticketSnap = await getDoc(doc(db, "tickets", ticketId));
+                const ticketData = ticketSnap.exists() ? ticketSnap.data() : null;
+                if (ticketData?.issuedById) {
+                  await addDoc(collection(db, "notifications"), {
+                    message: `Your ticket (${ticketData.item || ticketId}) has been marked as "Urgent".`,
+                    userId: ticketData.issuedById,
+                    ticketId,
+                    type: "ticketUpdate",
+                    createdByRole: "Admin",
+                    createdAt: serverTimestamp(),
+                  });
+                }
             alert("🚨 Ticket marked as Urgent!");
             statusModal.style.display = "none";
             tickets = await getTickets();
@@ -621,11 +653,27 @@ function waitForElement(selector, timeout = 2500) {
     async function updateReviewStatus(ticketId, newStatus) {
       if (!ticketId) return;
       try {
-        await updateDoc(doc(db, "tickets", ticketId), { status: newStatus });
+        const ticketRef = doc(db, "tickets", ticketId);
+        const ticketSnap = await getDoc(ticketRef);
+        const ticketData = ticketSnap.exists() ? ticketSnap.data() : null;
+
+        await updateDoc(ticketRef, { status: newStatus });
+
+        if (ticketData?.issuedById) {
+          await addDoc(collection(db, "notifications"), {
+            message: `Your ticket (${ticketData.item || ticketId}) has been marked as "${newStatus}".`,
+            userId: ticketData.issuedById,
+            ticketId,
+            type: "ticketUpdate",
+            createdByRole: "Admin",
+            createdAt: serverTimestamp(),
+          });
+        }
+
         alert(`✅ Ticket marked as ${newStatus}!`);
         if (reviewModal) reviewModal.style.display = "none";
 
-        // refresh local state and UI
+        // Refresh UI
         tickets = await getTickets();
         filteredTickets = [...tickets];
         renderTickets();
@@ -634,6 +682,7 @@ function waitForElement(selector, timeout = 2500) {
         alert("Failed to update ticket status. See console for details.");
       }
     }
+
 
     if (closeReviewModal && reviewModal) {
       closeReviewModal.addEventListener("click", () => (reviewModal.style.display = "none"));

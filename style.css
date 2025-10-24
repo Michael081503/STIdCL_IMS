@@ -656,3 +656,51 @@ body:not(.firebase-initialized) .side-nav {
 .login-options a:hover {
   color: #2563eb;
 }
+
+#notification-list li {
+  line-height: 1.4em;
+  padding: 10px 12px;
+}
+
+#notification-list .notif-time {
+  display: block;
+  color: #666;
+  font-size: 0.8em;
+  margin-top: 4px;
+}
+
+/* 🔔 Notification close pop animation */
+#notification-list li {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+#notification-list li.pop-out {
+  transform: scale(1.15);
+  opacity: 0;
+}
+
+@keyframes notif-pop-out {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    height: 48px; /* adjust based on your li padding/height */
+    margin-bottom: 8px; /* keep consistent spacing */
+  }
+  40% {
+    transform: scale(1.1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+    height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+#notification-list li.pop-out {
+  animation: notif-pop-out 0.35s ease forwards;
+  overflow: hidden;
+}

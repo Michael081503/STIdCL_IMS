@@ -120,36 +120,30 @@ window.onload = function () {
         });
         const titleSpan = document.createElement("span");
         titleSpan.classList.add("notif-text");
-        titleSpan.textContent = isAdmin ? "New ticket issued" : (data.message || "Notification");
-
         if (isAdmin) {
-          const descDiv = document.createElement("div");
-          descDiv.classList.add("notif-desc");
-          const userSpan = document.createElement("span");
-          userSpan.style.fontWeight = "600";
-          userSpan.style.color = "#000";
-          userSpan.textContent = data.issuedByName || data.issuedBy || "Unknown user";
-          const middleSpan = document.createElement("span");
-          middleSpan.style.color = "#444";
-          middleSpan.textContent = " issued a ticket regarding ";
-          const itemSpan = document.createElement("span");
-          itemSpan.style.fontWeight = "600";
-          itemSpan.style.color = "#000";
-          itemSpan.textContent = data.itemName || "an item";
-          descDiv.appendChild(userSpan);
-          descDiv.appendChild(middleSpan);
-          descDiv.appendChild(itemSpan);
-          li.appendChild(titleSpan);
-          li.appendChild(descDiv);
-        } else {
-          li.appendChild(titleSpan);
-          if (data.message && !isAdmin) {
-            const msgDiv = document.createElement("div");
-            msgDiv.classList.add("notif-desc");
-            msgDiv.textContent = data.message;
-            li.appendChild(msgDiv);
-          }
-        }
+    titleSpan.textContent = "New ticket issued";
+    const descDiv = document.createElement("div");
+    descDiv.classList.add("notif-desc");
+    const userSpan = document.createElement("span");
+    userSpan.style.fontWeight = "600";
+    userSpan.style.color = "#000";
+    userSpan.textContent = data.issuedByName || data.issuedBy || "Unknown user";
+    const middleSpan = document.createElement("span");
+    middleSpan.style.color = "#444";
+    middleSpan.textContent = " issued a ticket regarding ";
+    const itemSpan = document.createElement("span");
+    itemSpan.style.fontWeight = "600";
+    itemSpan.style.color = "#000";
+    itemSpan.textContent = data.itemName || "an item";
+    descDiv.appendChild(userSpan);
+    descDiv.appendChild(middleSpan);
+    descDiv.appendChild(itemSpan);
+    li.appendChild(titleSpan);
+    li.appendChild(descDiv);
+  } else {
+    titleSpan.textContent = data.message || "Notification";
+    li.appendChild(titleSpan);
+  }
 
         const timeSpan = document.createElement("span");
         timeSpan.classList.add("notif-time");
@@ -157,20 +151,27 @@ window.onload = function () {
         const dismissBtn = document.createElement("span");
         dismissBtn.textContent = "×";
         dismissBtn.classList.add("dismiss-btn");
+
         dismissBtn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          li.classList.add("fade-out");
-          li.addEventListener("transitionend", async () => {
-            li.remove();
-            await addDismissed(uid, doc.id);
-            activeDocs = activeDocs.filter(d => d.id !== doc.id);
-            showNotification(activeDocs.length);
-            if (activeDocs.length === 0) {
-              const emptyEl = notifDropdown.querySelector(".notif-empty");
-              if (emptyEl) emptyEl.style.display = "block";
-            }
-          }, { once: true });
-        });
+        e.stopPropagation();
+        // 🪄 Add pop animation
+        li.classList.add("pop-out");
+
+        // Wait for the pop animation to finish before removing
+        li.addEventListener("animationend", async () => {
+          li.remove();
+          await addDismissed(uid, doc.id);
+
+          // Update notification counter
+          activeDocs = activeDocs.filter(d => d.id !== doc.id);
+          showNotification(activeDocs.length);
+          if (activeDocs.length === 0) {
+            const emptyEl = notifDropdown.querySelector(".notif-empty");
+            if (emptyEl) emptyEl.style.display = "block";
+          }
+        }, { once: true });
+      });
+
 
         li.addEventListener("click", () => {
           notifDropdown.classList.remove("visible");
@@ -503,25 +504,29 @@ auth.onAuthStateChanged(user => {
               .onSnapshot(snapshot => renderNotifications(snapshot.docs, true));
           // ==================== USER LOGIN ====================
           } else if (role === 'User') {
-            inventoryLink.style.display = 'none';
-            myTicketsLink.style.display = 'block';
-            if (notifWrapper) notifWrapper.style.display = 'flex';
-            document.getElementById('rooms-link-a').style.display = 'none';
+          inventoryLink.style.display = 'none';
+          myTicketsLink.style.display = 'block';
+          if (notifWrapper) notifWrapper.style.display = 'flex';
+          document.getElementById('rooms-link-a').style.display = 'none';
 
-            notifUnsub = db.collection('notifications')
-              .where("createdByRole", "==", "Admin")
-              .orderBy("createdAt", "desc")
-              .limit(20)
-              .onSnapshot(snapshot => {
-                renderNotifications(snapshot.docs, false);
-                if (snapshot.empty) {
-                  const emptyEl = notifDropdown.querySelector(".notif-empty");
-                  if (emptyEl) emptyEl.style.display = "block";
-                  notifList.innerHTML = "";
-                  showNotification(0);
-                }
-              });
-          } else {
+          // ✅ Updated notification listener: only show notifications for this user
+          notifUnsub = db.collection('notifications')
+            .where("createdByRole", "==", "Admin")
+            .where("userId", "==", auth.currentUser.uid)
+            .orderBy("createdAt", "desc")
+            .limit(50)
+            .onSnapshot(snapshot => {
+              renderNotifications(snapshot.docs, false);
+              if (snapshot.empty) {
+                const emptyEl = notifDropdown.querySelector(".notif-empty");
+                if (emptyEl) emptyEl.style.display = "block";
+                notifList.innerHTML = "";
+                showNotification(0);
+              }
+            });
+
+          } 
+          else {
             inventoryLink.style.display = 'none';
             myTicketsLink.style.display = 'none';
             if (notifWrapper) notifWrapper.style.display = 'none';
