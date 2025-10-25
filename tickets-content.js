@@ -403,6 +403,7 @@ function waitForElement(selector, timeout = 2500) {
           tickets = await getTickets();
           filteredTickets = [...tickets];
           renderTickets();
+          softReloadTickets();
         } catch (err) {
           console.error("Failed to save deadline:", err);
           alert("Failed to assign handler. Please try again.");
@@ -570,6 +571,7 @@ function waitForElement(selector, timeout = 2500) {
             tickets = await getTickets();
             filteredTickets = [...tickets];
             renderTickets();
+            softReloadTickets();
           } catch (err) {
             console.error("Failed to mark urgent:", err);
             alert("Failed to update status.");
@@ -668,6 +670,7 @@ function waitForElement(selector, timeout = 2500) {
         tickets = await getTickets();
         filteredTickets = [...tickets];
         renderTickets();
+        softReloadTickets();
       } catch (err) {
         console.error("Failed to update review status:", err);
         alert("Failed to update ticket status. See console for details.");
@@ -757,6 +760,7 @@ function waitForElement(selector, timeout = 2500) {
           tickets = tickets.filter((t) => t.id !== ticketToDelete.id);
           filteredTickets = [...tickets];
           renderTickets();
+          softReloadTickets();
         } catch (err) {
           console.error("delete ticket error:", err);
           alert("Failed to delete ticket. Please try again.");
@@ -1075,6 +1079,7 @@ function waitForElement(selector, timeout = 2500) {
         console.error("Ticket save failed:", err);
         alert("Failed to save ticket. Please try again.");
       }
+      softReloadTickets();
     });
     // ===============================================================
 
@@ -1269,8 +1274,6 @@ overlay.appendChild(content);
 document.body.appendChild(overlay);
 
 console.log("[Automate] modal appended:", overlay);
-
-
 
   // helper: try to extract createdAt string from a row (many fallbacks)
   function extractCreatedAtFromRow(row) {
@@ -1616,6 +1619,11 @@ console.log("[Automate] modal appended:", overlay);
       .replaceAll("'", '&#39;');
   }
 };
+
+// Reload Handler
+function softReloadTickets() {
+//Reload
+}
 
 // ==================== FAQS HANDLER ====================
 document.querySelectorAll(".faq-question").forEach((btn) => {
