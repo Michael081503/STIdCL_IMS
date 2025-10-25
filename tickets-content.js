@@ -1,11 +1,3 @@
-// tickets-content.js (Converted to Firebase v10 modular SDK)
-// Features:
-// - All original ticket features preserved (pagination, admin flows, feedback, automate, etc.)
-// - Multi-image upload using Firebase Storage (modular)
-// - Save image URLs to Firestore as `imageUrls: []`
-// - Click item name to view images modal (thumbnails) and click thumbnail -> lightbox
-// - Uses your provided firebaseConfig (replace if needed)
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
 import {
@@ -20,12 +12,11 @@ import {
   query,
   orderBy,
   serverTimestamp,
-  Timestamp
+  Timestamp,
 } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-storage.js";
 
 // --------------------------------------------------------
-// Paste your firebaseConfig exactly as provided (you gave it earlier)
 const firebaseConfig = {
   apiKey: "AIzaSyAw2rSjJ3f_S98dntbsyl9kyXvi9MC44Dw",
   authDomain: "fir-inventory-2e62a.firebaseapp.com",
