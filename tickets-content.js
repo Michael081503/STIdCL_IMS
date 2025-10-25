@@ -823,19 +823,106 @@ function waitForElement(selector, timeout = 2500) {
       modal.style.zIndex = "10000";
       //modal.style.maxWidth = "700px";
       modal.innerHTML = `
-        <h2 style="text-align:center; color:#2D3E50; margin-bottom:5px;">Select an Inventory Item</h2>
-        <p style="text-align:center; color:#6b7280; font-size:0.9rem; margin-bottom:15px;">
-          Hover on items to see item ID
-        </p>
-        <div id="item-select-container" class="item-select-container"></div>
-        <div style="text-align:center; margin-top:20px;">
-          <button id="close-item-select" class="cancel-btn">Close</button>
-        </div>
-      `;
+      <h2 style="text-align:center; color:#2D3E50; margin-bottom:5px;">Select an Inventory Item</h2>
+      <p style="text-align:center; color:#6b7280; font-size:0.9rem; margin-bottom:15px;">
+        Hover on items to see item ID
+      </p>
+
+      <!-- 🔍 Search + Filter Controls -->
+      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:15px;">
+        <input 
+          type="text" 
+          id="item-search-input" 
+          placeholder="Search by item name..." 
+          style="flex:1; min-width:220px; padding:8px 12px; border:1.5px solid #ccc; border-radius:6px;"
+        />
+        <select id="item-room-filter" style="padding:8px 12px; border:1.5px solid #ccc; border-radius:6px; min-width:160px;">
+          <option value="">All Rooms</option>
+        </select>
+      </div>
+
+      <div id="item-select-container" class="item-select-container"></div>
+
+      <div style="text-align:center; margin-top:20px;">
+        <button id="close-item-select" class="cancel-btn">Close</button>
+      </div>
+    `;
+
       overlay.appendChild(modal);
       document.body.appendChild(overlay);
 
       const container = modal.querySelector("#item-select-container");
+      // --- Search & Filter setup ---
+      const searchInput = modal.querySelector("#item-search-input");
+      const roomFilter = modal.querySelector("#item-room-filter");
+
+      // Populate filter dropdown
+      const uniqueLabs = [...new Set(items.map(i => i.lab || "Unassigned"))].sort();
+      uniqueLabs.forEach(lab => {
+        const opt = document.createElement("option");
+        opt.value = lab;
+        opt.textContent = lab;
+        roomFilter.appendChild(opt);
+      });
+
+      // Render item cards dynamically
+      function renderFilteredItems() {
+        const q = searchInput.value.toLowerCase();
+        const labFilter = roomFilter.value;
+        container.innerHTML = "";
+
+        const grouped = {};
+        items
+          .filter(i =>
+            i.name.toLowerCase().includes(q) &&
+            (labFilter === "" || i.lab === labFilter)
+          )
+          .forEach(i => {
+            const lab = i.lab || "Unassigned";
+            if (!grouped[lab]) grouped[lab] = [];
+            grouped[lab].push(i);
+          });
+
+        for (const [lab, groupItems] of Object.entries(grouped)) {
+          const section = document.createElement("div");
+          section.className = "item-group";
+
+          const labHeader = document.createElement("h3");
+          labHeader.textContent = lab;
+          labHeader.className = "item-group-title";
+          section.appendChild(labHeader);
+
+          const grid = document.createElement("div");
+          grid.className = "item-grid";
+
+          groupItems.forEach(it => {
+            const card = document.createElement("button");
+            card.className = "item-card";
+            card.textContent = it.name;
+            card.title = `Item ID: ${it.id}`;
+            card.addEventListener("click", () => {
+              selectedItemId = it.id;
+              selectedItemName = it.name;
+              const shortId = it.id.slice(-5);
+              const label = document.getElementById("tc-selectedItemLabel");
+              label.textContent = `${it.name} (Item ID: ${shortId})`;
+              label.style.color = "#111";
+              overlay.remove();
+            });
+            grid.appendChild(card);
+          });
+
+          section.appendChild(grid);
+          container.appendChild(section);
+        }
+      }
+
+      searchInput.addEventListener("input", renderFilteredItems);
+      roomFilter.addEventListener("change", renderFilteredItems);
+
+      // Initial render
+      renderFilteredItems();
+
 
       const grouped = {};
       items.forEach(item => {

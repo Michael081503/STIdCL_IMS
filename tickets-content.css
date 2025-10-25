@@ -985,7 +985,7 @@ body {
 .stat-box.review { background: #f3e8ff; color: #6b21a8; }
 .stat-box.solved { background: #dcfce7; color: #166534; }
 .stat-box.unsolved { background: #fee2e2; color: #991b1b; }
-
+.status-resolved {background-color: #16a34a; color: #fff;}
 
 /* ============================ */
 /*   STATUS FILTER DROPDOWN */
@@ -1005,4 +1005,21 @@ body {
   border-color: #2D3E50;
   outline: none;
 }
+
+/* ============================= */
+/*   Search (In Add Item) Design */
+/* ============================= */
+.item-select-container {
+  margin-top: 10px;
+}
+.item-group-title {
+  color: #2D3E50;
+  margin: 10px 0 6px;
+}
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
 

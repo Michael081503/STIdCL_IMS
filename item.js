@@ -122,8 +122,8 @@ async function loadItemReports() {
       <td>
         <select class="ticket-status-dropdown ${statusClass}" data-id="${doc.id}">
           <option value="Pending" ${data.status === "Pending" ? "selected" : ""}>Pending</option>
-          <option value="Resolved" ${data.status === "Resolved" ? "selected" : ""}>Resolved</option>
-          <option value="Closed" ${data.status === "Closed" ? "selected" : ""}>Closed</option>
+          <option value="Solved" ${data.status === "Solved" ? "selected" : ""}>Solved</option>
+          <option value="Unsolved" ${data.status === "Unsolved" ? "selected" : ""}>Unsolved</option>
         </select>
       </td>
       <td>

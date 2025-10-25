@@ -592,12 +592,48 @@ function showAddItemForm() {
         btn.className = "item-choice-btn";
         btn.type = "button";
         btn.innerHTML = `${opt.icon} ${opt.name}`;
+
         btn.addEventListener("click", () => {
-          nameInput.value = opt.name;
-          nameInput.dataset.value = opt.name;
-          nameInput.disabled = true; 
-          subOverlay.remove();
+        subOverlay.remove();
+
+        // Create a small modal for brand input
+        const brandOverlay = document.createElement("div");
+        brandOverlay.className = "modal-overlay";
+
+        const brandModal = document.createElement("div");
+        brandModal.className = "modal modal--small";
+        brandModal.innerHTML = `
+          <h3>Specify Brand for "${opt.name}"</h3>
+          <input type="text" id="brand-input" placeholder="e.g., Acer, Samsung, Logitech" 
+                style="padding:8px; width:80%; border-radius:6px; border:1px solid #ccc; font-size:14px; margin-top:10px;">
+          <div style="margin-top:15px;">
+            <button id="brand-confirm" style="background-color:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">OK</button>
+            <button id="brand-cancel" style="margin-left:10px;background-color:#6b7280;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">Cancel</button>
+          </div>
+        `;
+        brandOverlay.appendChild(brandModal);
+        document.body.appendChild(brandOverlay);
+
+        const confirmBtn = brandModal.querySelector("#brand-confirm");
+        const cancelBtn = brandModal.querySelector("#brand-cancel");
+        const brandInput = brandModal.querySelector("#brand-input");
+
+        brandInput.focus();
+
+        confirmBtn.addEventListener("click", () => {
+          const brand = brandInput.value.trim() || "Unknown";
+          nameInput.value = `${opt.name} (${brand})`;
+          nameInput.dataset.value = `${opt.name} (${brand})`;
+          nameInput.disabled = true;
+          brandOverlay.remove();
         });
+
+        cancelBtn.addEventListener("click", () => {
+          brandOverlay.remove();
+        });
+      });
+
+
         cell.appendChild(btn);
         row.appendChild(cell);
       });
