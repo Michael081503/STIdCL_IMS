@@ -86,6 +86,24 @@ async function fetchInventory() {
     }
 
     const allItems = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+    const labFilterSelect = document.getElementById("filter-lab");
+    if (labFilterSelect) {
+      const uniqueLabs = [...new Set(allItems.map(item => item.Laboratory).filter(Boolean))].sort();
+
+      const currentSelection = labFilterSelect.value;
+
+      labFilterSelect.innerHTML = `<option value="">All Locations</option>`;
+      uniqueLabs.forEach(lab => {
+        const opt = document.createElement("option");
+        opt.value = lab;
+        opt.textContent = lab;
+        labFilterSelect.appendChild(opt);
+      });
+
+      const stillExists = uniqueLabs.includes(currentSelection);
+      labFilterSelect.value = stillExists ? currentSelection : "";
+    }
+
 
     // ✅ Update stats
     const totalItems = allItems.length;
@@ -133,7 +151,11 @@ async function fetchInventory() {
         <td><a href="https://michael081503.github.io/STIdCL_IMS/item.html?id=${item.id}"
                target="_blank" style="color:#000;text-decoration:none;">
               ${item.Name || "Unnamed"}</a></td>
-        <td>${item.Laboratory || "Unknown"}</td>
+
+        <td class="location-cell" style="color:#2563eb;cursor:pointer;text-decoration:underline;">
+          ${item.Laboratory || "Unknown"}
+        </td>
+
         <td class="date-added-cell" style="color:#2563eb;cursor:pointer;text-decoration:underline;">
           ${parseStoredDateToLocal(item["Date added"])}
         </td>
@@ -167,6 +189,11 @@ async function fetchInventory() {
         }
       });
       tr.querySelector(".qr-btn").addEventListener("click", () => showQRModal(item.id));
+
+      tr.querySelector(".location-cell").addEventListener("click", () => {
+        showRelocateModal(item.id, item.Laboratory || "Unknown");
+      });
+
     });
 
   } catch (err) {
@@ -877,6 +904,137 @@ function showEditItemForm(itemId, itemData) {
     } catch (err) {
       console.error(err);
       alert("❌ Failed to update item.");
+    }
+  });
+}
+/* -------------------------
+   Relocate Item Modal
+------------------------- */
+function showRelocateModal(itemId, currentLocation) {
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+
+  const modal = document.createElement("div");
+  modal.className = "modal modal--small";
+
+  modal.innerHTML = `
+    <h2>📍 Relocate Item</h2>
+    <p style="margin-bottom:10px; font-size:14px;">Current location: <strong>${currentLocation}</strong></p>
+    
+    <label>Building:</label>
+    <select id="relocate-building" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; margin-bottom:10px;">
+      <option value="">Select Building</option>
+      <option value="Main Building">Main Building</option>
+      <option value="Pool Side">Pool Side</option>
+      <option value="Annex">Annex</option>
+      <option value="Others">Others</option>
+    </select>
+
+    <label>Room:</label>
+    <input type="text" id="relocate-room" placeholder="Select building first" disabled style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; margin-bottom:15px;" />
+
+    <div style="text-align:center;">
+      <button id="relocate-confirm" style="background-color:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">Confirm</button>
+      <button id="relocate-cancel" style="margin-left:10px;background-color:#6b7280;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">Cancel</button>
+    </div>
+  `;
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  const buildingSelect = modal.querySelector("#relocate-building");
+  const roomInput = modal.querySelector("#relocate-room");
+
+  buildingSelect.addEventListener("change", () => {
+    const building = buildingSelect.value;
+    roomInput.value = "";
+    roomInput.disabled = true;
+    roomInput.placeholder = "Select building first";
+
+    if (!building) return;
+
+    if (building === "Others") {
+      roomInput.disabled = false;
+      roomInput.placeholder = "Enter custom location...";
+      roomInput.focus();
+      return;
+    }
+
+    let rooms = [];
+    if (building === "Main Building") {
+      rooms = [
+        "Laboratory 1", "Laboratory 2", "Laboratory 3", "Laboratory 4",
+        "Room 201", "Room 202", "Room 203", "Room 204",
+        "Room 401", "Room 402", "Room 403", "Library", "Faculty", "Tech Lab", "Basement 1", "Basement 2"
+      ];
+    } else if (building === "Annex") {
+      rooms = ["Room 201", "Room 202", "Room 203", "Room 204", "Auditorium"];
+    } else if (building === "Pool Side") {
+      rooms = ["FH 101", "FH 102", "FH 103", "FH 104"];
+    }
+
+    // Sub-modal for selecting room
+    const subOverlay = document.createElement("div");
+    subOverlay.className = "modal-overlay";
+
+    const subModal = document.createElement("div");
+    subModal.className = "modal modal--small";
+    subModal.style.width = "80%";
+    subModal.style.maxWidth = "600px";
+    subModal.innerHTML = `
+      <h3>Select ${building} Room</h3>
+      <div id="room-options"></div>
+      <button id="sub-close-room" style="margin-top:10px;">Cancel</button>
+    `;
+
+    subOverlay.appendChild(subModal);
+    document.body.appendChild(subOverlay);
+
+    const roomOptions = subModal.querySelector("#room-options");
+    const table = document.createElement("table");
+    table.className = "inventory-table";
+    const tbody = document.createElement("tbody");
+
+    for (let i = 0; i < rooms.length; i += 3) {
+      const row = document.createElement("tr");
+      rooms.slice(i, i + 3).forEach(room => {
+        const cell = document.createElement("td");
+        const btn = document.createElement("button");
+        btn.className = "item-choice-btn";
+        btn.textContent = room;
+        btn.addEventListener("click", () => {
+          roomInput.value = `${building} (${room})`;
+          subOverlay.remove();
+        });
+        cell.appendChild(btn);
+        row.appendChild(cell);
+      });
+      tbody.appendChild(row);
+    }
+
+    table.appendChild(tbody);
+    roomOptions.appendChild(table);
+
+    subModal.querySelector("#sub-close-room").addEventListener("click", () => subOverlay.remove());
+  });
+
+  modal.querySelector("#relocate-cancel").addEventListener("click", () => overlay.remove());
+
+  modal.querySelector("#relocate-confirm").addEventListener("click", async () => {
+    const newLoc = roomInput.value.trim();
+    if (!newLoc) {
+      alert("Please select a valid new location.");
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, "inventory", itemId), { Laboratory: newLoc });
+      alert("✅ Item relocated successfully!");
+      overlay.remove();
+      fetchInventory();
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to relocate item.");
     }
   });
 }
