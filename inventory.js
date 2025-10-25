@@ -559,9 +559,10 @@ function showAddItemForm() {
       ],
       Computers: [
         { name: "Intel PC", icon: "💻" },
-        { name: "Ryzen PC", icon: "🖥️" },
+        { name: "Ryzen PC", icon: "💻" },
         { name: "Mouse", icon: "🖱️" },
-        { name: "Keyboard", icon: "⌨️" }
+        { name: "Keyboard", icon: "⌨️" },
+        { name: "Monitor", icon: "🖥️" }
       ],
       Electronics: [
         { name: "Projector", icon: "📽️" },
