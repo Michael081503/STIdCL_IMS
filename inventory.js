@@ -630,7 +630,7 @@ function showAddItemForm() {
         const brandModal = document.createElement("div");
         brandModal.className = "modal modal--small";
         brandModal.innerHTML = `
-          <h3>Specify Brand for "${opt.name}"</h3>
+          <h3>Specifications for "${opt.name}"</h3>
           <input type="text" id="brand-input" placeholder="e.g., Acer, Samsung, Logitech" 
                 style="padding:8px; width:80%; border-radius:6px; border:1px solid #ccc; font-size:14px; margin-top:10px;">
           <div style="margin-top:15px;">
