@@ -849,6 +849,7 @@ function waitForElement(selector, timeout = 2500) {
       const container = modal.querySelector("#item-select-container");
       // --- Search & Filter setup ---
       const searchInput = modal.querySelector("#item-search-input");
+
       const roomFilter = modal.querySelector("#item-room-filter");
 
       // Populate filter dropdown
@@ -917,47 +918,6 @@ function waitForElement(selector, timeout = 2500) {
 
       // Initial render
       renderFilteredItems();
-
-
-      const grouped = {};
-      items.forEach(item => {
-        const lab = item.lab || "Unassigned";
-        if (!grouped[lab]) grouped[lab] = [];
-        grouped[lab].push(item);
-      });
-
-      for (const [lab, groupItems] of Object.entries(grouped)) {
-        const section = document.createElement("div");
-        section.className = "item-group";
-
-        const labHeader = document.createElement("h3");
-        labHeader.textContent = lab;
-        labHeader.className = "item-group-title";
-        section.appendChild(labHeader);
-
-        const grid = document.createElement("div");
-        grid.className = "item-grid";
-
-        groupItems.forEach(it => {
-          const card = document.createElement("button");
-          card.className = "item-card";
-          card.textContent = it.name;
-          card.title = `Item ID: ${it.id}`;
-          card.addEventListener("click", () => {
-            selectedItemId = it.id;
-            selectedItemName = it.name;
-            const shortId = it.id.slice(-5);
-            const label = document.getElementById("tc-selectedItemLabel");
-            label.textContent = `${it.name} (Item ID: ${shortId})`;
-            label.style.color = "#111";
-            overlay.remove();
-          });
-          grid.appendChild(card);
-        });
-
-        section.appendChild(grid);
-        container.appendChild(section);
-      }
 
       modal.querySelector("#close-item-select").addEventListener("click", () => overlay.remove());
     }

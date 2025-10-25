@@ -131,7 +131,8 @@ html, body {
 .condition-damaged { background-color: rgba(220, 38, 38, .85); }
 .condition-for-maintenance { background-color: rgba(234, 179, 8, .85); color: #111 !important; }
 .condition-for-replacement { background-color: rgba(147, 51, 234, .85); }
-.condition-unknown { background-color: #999; }
+.condition-new { background-color: rgba(51, 234, 66, 0.85); }
+.condition-unknown { background-color: #494343; }
 
 /* Stats panel (right) */
 .stats-panel {
@@ -227,7 +228,7 @@ html, body {
 .mini-condition-card.condition-for-maintenance { background-color: rgba(234, 179, 8, .85); color: #111; }
 .mini-condition-card.condition-for-replacement { background-color: rgba(147, 51, 234, .85); color: #fff; }
 .mini-condition-card.condition-unknown { background-color: #6b7280; color: #fff; }
-.mini-condition-card.condition-new { background-color: #16a34a; color: #fff; }
+.mini-condition-card.condition-new { background-color: rgba(51, 234, 66, 0.85); color: #fff; }
 
 .stats-placeholder {
   text-align: center;
