@@ -1,4 +1,4 @@
-// ✅ profile.js — Fully working & auto-refreshing avatar (CORS-safe + DOM-sync fix)
+// ✅ profile.js — safer, resilient version (drop-in replacement)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
 import {
   getAuth,
@@ -34,13 +34,14 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app, "gs://fir-inventory-2e62a.firebasestorage.app");
 
-// === DOM elements ===
+// === DOM elements (safely) ===
 const uploadBtn = document.getElementById("upload-btn");
 const fileInput = document.getElementById("avatar-upload");
 const nameEl = document.getElementById("profile-name");
 const emailEl = document.getElementById("profile-email");
 const roleEl = document.getElementById("profile-role");
 const createdEl = document.getElementById("profile-created");
+const positionEl = document.getElementById("profile-position");
 
 // ==================== Edit Name Elements ====================
 const editBtn = document.getElementById("edit-name-btn");
@@ -58,35 +59,65 @@ async function loadAvatar(url) {
   try {
     const avatarImg = document.getElementById("profile-avatar");
     if (!avatarImg) {
-      console.warn("⚠️ Avatar element not found in DOM yet.");
+      console.warn("⚠️ Avatar element not found in DOM.");
       return;
     }
 
-    const res = await fetch(url, { method: "HEAD", cache: "no-store" });
-    console.log("HEAD status:", res.status);
-
-    if (res.ok) {
-      const freshUrl = url + "?t=" + Date.now();
-      avatarImg.style.background = "none";
-      avatarImg.src = freshUrl;
-      console.log("✅ Avatar src updated to:", freshUrl);
-    } else {
-      avatarImg.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-      console.warn("⚠️ Avatar URL invalid, using default.");
+    // HEAD might be blocked by CORS on some storage setups; keep this tolerant
+    try {
+      const res = await fetch(url, { method: "HEAD", cache: "no-store" });
+      if (!res.ok) throw new Error("HEAD returned " + res.status);
+    } catch (headErr) {
+      // HEAD failed — we'll still try to set src (some hosts block HEAD)
+      console.info("ℹ️ HEAD check failed or blocked, will still try to set src:", headErr.message);
     }
+
+    // append timestamp query to bust cache
+    const freshUrl = url + "?t=" + Date.now();
+    avatarImg.style.background = "none";
+    avatarImg.src = freshUrl;
+    console.log("✅ Avatar src updated to:", freshUrl);
   } catch (err) {
     console.error("❌ Avatar load failed:", err);
     const avatarImg = document.getElementById("profile-avatar");
-    if (avatarImg)
-      avatarImg.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+    if (avatarImg) avatarImg.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
   }
+}
+
+// === Utility: convert Firestore createdAt-like values to readable string ===
+function formatCreatedAt(createdVal) {
+  if (!createdVal) return "N/A";
+
+  // Firestore Timestamp object
+  if (typeof createdVal.toDate === "function") {
+    try {
+      return createdVal.toDate().toLocaleString();
+    } catch (e) { console.warn("Failed to toDate() timestamp:", e); }
+  }
+
+  // Raw { seconds: ... } shaped object
+  if (createdVal.seconds) {
+    try {
+      return new Date(createdVal.seconds * 1000).toLocaleString();
+    } catch (e) { console.warn("Failed to parse seconds:", e); }
+  }
+
+  // ISO string or numeric millis
+  try {
+    const dt = new Date(createdVal);
+    if (!isNaN(dt)) return dt.toLocaleString();
+  } catch (e) { /* ignore */ }
+
+  return "N/A";
 }
 
 // === Load user profile ===
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    document.querySelector(".profile-container").innerHTML = `
-      <p style="color:red; text-align:center;">Please log in to view your profile.</p>`;
+    const container = document.querySelector(".profile-container");
+    if (container) {
+      container.innerHTML = `<p style="color:red; text-align:center;">Please log in to view your profile.</p>`;
+    }
     return;
   }
 
@@ -95,111 +126,148 @@ onAuthStateChanged(auth, async (user) => {
 
     if (userDoc.exists()) {
       const data = userDoc.data();
-      const fullName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
-      nameEl.textContent = fullName || user.email.split("@")[0];
-      emailEl.textContent = data.email || user.email;
-      roleEl.textContent = data.role || "User";
-      createdEl.textContent = data.createdAt
-        ? data.createdAt.toDate().toLocaleString()
-        : "N/A";
 
+      // name
+      const fullName = `${data.firstName || ""} ${data.lastName || ""}`.trim();
+      if (nameEl) nameEl.textContent = fullName || (user.email ? user.email.split("@")[0] : "User");
+
+      // email
+      if (emailEl) emailEl.textContent = data.email || user.email || "N/A";
+
+      // role
+      if (roleEl) roleEl.textContent = data.role || "User";
+
+      // position: show literal "undefined" when there is no position set
+      // requirement: If user doesn't have a position yet, it should show as undefined
+      const posValue = (data.position === undefined || data.position === null || data.position === "") ? "undefined" : data.position;
+      if (positionEl) positionEl.textContent = posValue;
+
+      // createdAt: robust formatting
+      const createdText = formatCreatedAt(data.createdAt);
+      if (createdEl) createdEl.textContent = createdText;
+
+      // avatar (keep isolated so errors won't stop other UI)
       if (data.avatarURL) {
-        await loadAvatar(data.avatarURL);
+        await loadAvatar(data.avatarURL).catch(err => console.warn("Avatar load error (non-fatal):", err));
       } else {
         const avatarImg = document.getElementById("profile-avatar");
-        avatarImg.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        if (avatarImg) avatarImg.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
       }
     } else {
-      emailEl.textContent = user.email;
-      roleEl.textContent = "N/A";
-      createdEl.textContent = "N/A";
+      // no doc
+      if (emailEl) emailEl.textContent = user.email || "N/A";
+      if (roleEl) roleEl.textContent = "N/A";
+      if (positionEl) positionEl.textContent = "undefined";
+      if (createdEl) createdEl.textContent = "N/A";
     }
   } catch (err) {
     console.error("Error loading profile:", err);
+    // keep UI responsive: set sensible fallbacks
+    if (emailEl && !emailEl.textContent) emailEl.textContent = user.email || "N/A";
+    if (roleEl && !roleEl.textContent) roleEl.textContent = "N/A";
+    if (positionEl && !positionEl.textContent) positionEl.textContent = "undefined";
+    if (createdEl && !createdEl.textContent) createdEl.textContent = "N/A";
   }
 });
 
 // ==================== Edit Name Modal Logic ====================
-editBtn.addEventListener("click", async () => {
-  const user = auth.currentUser;
-  if (!user) return;
+if (editBtn) {
+  editBtn.addEventListener("click", async () => {
+    const user = auth.currentUser;
+    if (!user) return;
 
-  try {
-    const docSnap = await getDoc(doc(db, "users", user.uid));
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      editFirst.value = data.firstName || "";
-      editLast.value = data.lastName || "";
+    try {
+      const docSnap = await getDoc(doc(db, "users", user.uid));
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (editFirst) editFirst.value = data.firstName || "";
+        if (editLast) editLast.value = data.lastName || "";
+      }
+      if (editMsg) editMsg.textContent = "";
+      if (editModal) editModal.style.display = "block";
+    } catch (err) {
+      console.error("Error loading name:", err);
     }
-    editMsg.textContent = "";
-    editModal.style.display = "block";
-  } catch (err) {
-    console.error("Error loading name:", err);
-  }
-});
+  });
+}
 
-cancelEditBtn.addEventListener("click", () => {
-  editModal.style.display = "none";
-});
+if (cancelEditBtn) {
+  cancelEditBtn.addEventListener("click", () => {
+    if (editModal) editModal.style.display = "none";
+  });
+}
 
-saveNameBtn.addEventListener("click", async () => {
-  const user = auth.currentUser;
-  if (!user) return;
+if (saveNameBtn) {
+  saveNameBtn.addEventListener("click", async () => {
+    const user = auth.currentUser;
+    if (!user) return;
 
-  const newFirst = editFirst.value.trim();
-  const newLast = editLast.value.trim();
+    const newFirst = (editFirst?.value || "").trim();
+    const newLast = (editLast?.value || "").trim();
 
-  if (!newFirst || !newLast) {
-    editMsg.style.color = "red";
-    editMsg.textContent = "❌ Both fields are required.";
-    return;
-  }
+    if (!newFirst || !newLast) {
+      if (editMsg) {
+        editMsg.style.color = "red";
+        editMsg.textContent = "❌ Both fields are required.";
+      }
+      return;
+    }
 
-  try {
-    await updateDoc(doc(db, "users", user.uid), {
-      firstName: newFirst,
-      lastName: newLast
-    });
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        firstName: newFirst,
+        lastName: newLast
+      });
 
-    // ✅ Update displayed name immediately
-    nameEl.textContent = `${newFirst} ${newLast}`.trim();
-    editMsg.style.color = "green";
-    editMsg.textContent = "✅ Name updated successfully!";
-    setTimeout(() => editModal.style.display = "none", 1200);
-  } catch (err) {
-    editMsg.style.color = "red";
-    editMsg.textContent = "❌ Update failed: " + err.message;
-  }
-});
+      // Update displayed name immediately
+      if (nameEl) nameEl.textContent = `${newFirst} ${newLast}`.trim();
+      if (editMsg) {
+        editMsg.style.color = "green";
+        editMsg.textContent = "✅ Name updated successfully!";
+      }
+      setTimeout(() => { if (editModal) editModal.style.display = "none"; }, 1200);
+    } catch (err) {
+      if (editMsg) {
+        editMsg.style.color = "red";
+        editMsg.textContent = "❌ Update failed: " + err.message;
+      }
+      console.error("Save name failed:", err);
+    }
+  });
+}
 
 // === Handle avatar upload ===
-uploadBtn.addEventListener("click", () => fileInput.click());
+if (uploadBtn) {
+  uploadBtn.addEventListener("click", () => fileInput?.click());
+}
 
-fileInput.addEventListener("change", async (e) => {
-  const user = auth.currentUser;
-  if (!user) return alert("Please log in first.");
+if (fileInput) {
+  fileInput.addEventListener("change", async (e) => {
+    const user = auth.currentUser;
+    if (!user) return alert("Please log in first.");
 
-  const file = e.target.files[0];
-  if (!file) return;
+    const file = e.target.files[0];
+    if (!file) return;
 
-  try {
-    console.log("Uploading file...");
-    const fileRef = ref(storage, `avatars/${user.uid}.jpg`);
-    await uploadBytes(fileRef, file);
-    console.log("✅ Upload complete");
+    try {
+      console.log("Uploading file...");
+      const fileRef = ref(storage, `avatars/${user.uid}.jpg`);
+      await uploadBytes(fileRef, file);
+      console.log("✅ Upload complete");
 
-    const url = await getDownloadURL(fileRef);
-    console.log("✅ Download URL obtained:", url);
+      const url = await getDownloadURL(fileRef);
+      console.log("✅ Download URL obtained:", url);
 
-    await updateDoc(doc(db, "users", user.uid), { avatarURL: url });
-    console.log("✅ Firestore updated with new avatar URL");
+      await updateDoc(doc(db, "users", user.uid), { avatarURL: url });
+      console.log("✅ Firestore updated with new avatar URL");
 
-    // Wait a short delay before updating image to ensure DOM is stable
-    setTimeout(() => loadAvatar(url), 500);
+      // Update avatar with a slight delay to let storage stabilize
+      setTimeout(() => loadAvatar(url), 500);
 
-    alert("Profile photo updated successfully!");
-  } catch (err) {
-    console.error("❌ Upload failed:", err);
-    alert("Error uploading photo: " + err.message);
-  }
-});
+      alert("Profile photo updated successfully!");
+    } catch (err) {
+      console.error("❌ Upload failed:", err);
+      alert("Error uploading photo: " + err.message);
+    }
+  });
+}

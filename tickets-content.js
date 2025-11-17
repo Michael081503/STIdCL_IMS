@@ -211,12 +211,25 @@ function waitForElement(selector, timeout = 2500) {
       }
     }
 
+    function getNextAssignIndex(max) {
+      const key = "autoAssignIndex";
+      let idx = parseInt(localStorage.getItem(key) || "0", 10);
+      const nextIdx = idx % max;
+      localStorage.setItem(key, (nextIdx + 1).toString());
+      return nextIdx;
+    }
+
     let tickets = await getTickets();
+    const currentRole = await getUserRole();
+
+    if (currentRole === "Admin") {
+      startAutoAssignWatcher();
+    }
+
     let filteredTickets = [...tickets];
     let currentPage = 1;
     const pageSize = 5;
 
-    const currentRole = await getUserRole();
     const faqSection = document.querySelector(".tickets-faq");
     const adminStatsContainer = document.getElementById("admin-stats-container");
 
@@ -429,6 +442,7 @@ function waitForElement(selector, timeout = 2500) {
         tr.dataset.createdAt = createdAtValue;
 
         const statusClass = "status-" + (t.status || "pending").toLowerCase();
+        const autoTag = t.autoAssigned ? `<span class="auto-tag">Auto</span>` : "";
         const desc = t.description || "";
         const showButton = desc.length > 80;
 
@@ -484,7 +498,7 @@ function waitForElement(selector, timeout = 2500) {
             <span class="status-badge ${statusClass}" 
               data-id="${t.id}" 
               data-status="${t.status}">
-              ${escapeHtml(t.status)}
+              ${escapeHtml(t.status)} ${autoTag}
             </span>
           </td>
           <td><button class="btn-delete" data-index="${index}" title="Delete Ticket">Delete</button></td>
@@ -981,7 +995,11 @@ function waitForElement(selector, timeout = 2500) {
         description,
         status: "Pending",
         feedbackHistory: [],
+        assignedTo: null,
+        assignedToName: null,
         createdAt: serverTimestamp(),
+        autoAssignCheckedAt: serverTimestamp(), 
+        autoAssigned: false, 
         issuedBy: currentUser?.email || "Unknown user",
         issuedById: currentUser?.uid || null,
         createdByRole: role,
@@ -1120,6 +1138,82 @@ function waitForElement(selector, timeout = 2500) {
 
     // INITIAL render
     renderTickets();
+    // ============== AUTO ASSIGNMENT (placed INSIDE initTicketsContent() so it can see getTickets(), maintenanceUsers, etc.) ===============
+async function startAutoAssignWatcher() {
+  console.log("%c[AutoAssign] Started watcher", "color:green");
+
+  // Run immediately once, then every 60s
+  async function runOnce() {
+    try {
+      console.log("[AutoAssign] Checking pending tickets...");
+
+      // Reload latest tickets using the local getTickets() function
+      tickets = await getTickets();
+
+      const now = Date.now();
+      const unassigned = tickets.filter(t =>
+        t.status === "Pending" &&
+        (!t.assignedTo || !t.assignedToName) &&
+        t.createdAt?.toDate &&
+        (now - t.createdAt.toDate().getTime()) >= (5 * 60 * 1000) // 5 minutes
+      );
+
+      if (unassigned.length === 0) {
+        console.log("[AutoAssign] No tickets found.");
+        return;
+      }
+
+      if (!maintenanceUsers || maintenanceUsers.length === 0) {
+        console.warn("[AutoAssign] No maintenance users available.");
+        return;
+      }
+
+      for (const ticket of unassigned) {
+        const idx = getNextAssignIndex(maintenanceUsers.length);
+        const user = maintenanceUsers[idx];
+
+        console.log(`Auto assigning "${ticket.id}" to ${user.name}`);
+
+        // update ticket
+        await updateDoc(doc(db, "tickets", ticket.id), {
+          assignedTo: user.id,
+          assignedToName: user.name,
+          status: "Assigned",
+          autoAssigned: true,
+          assignedAt: serverTimestamp()
+        });
+
+        // add notification
+        try {
+          await addDoc(collection(db, "notifications"), {
+            message: `System auto-assigned ticket ${ticket.id} to ${user.name}`,
+            userId: user.id,
+            ticketId: ticket.id,
+            type: "systemAutoAssign",
+            createdAt: serverTimestamp()
+          });
+        } catch (notifErr) {
+          console.warn("Failed to create notification for auto-assign:", notifErr);
+        }
+      }
+
+      // refresh and rerender
+      tickets = await getTickets();
+      filteredTickets = [...tickets];
+      renderTickets();
+    } catch (err) {
+      console.error("[AutoAssign] Error during run:", err);
+    }
+  }
+
+  // run immediately and then at interval
+  await runOnce();
+  const intervalId = setInterval(runOnce, 60000);
+
+  // Optional: return a stop function so you can clear the interval later
+  return () => clearInterval(intervalId);
+}
+
   } catch (err) {
     console.error("tickets-content init error:", err);
   }

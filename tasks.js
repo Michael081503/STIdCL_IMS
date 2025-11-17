@@ -92,6 +92,177 @@
     }
 
     // ==============================
+    // Request for Item Button & Modal
+    // ==============================
+    (function addRequestItemFeature() {
+      const tasksTable = document.getElementById("tasksTableBody")?.closest("table");
+      if (!tasksTable) return;
+
+      // Create container below the table
+      const container = document.createElement("div");
+      container.style.margin = "15px 0";
+      container.style.textAlign = "right"; 
+      // Create button
+      const requestBtn = document.createElement("button");
+      requestBtn.id = "requestItemBtn";
+      requestBtn.textContent = "Submit a Request";
+      requestBtn.style.cssText = `
+        padding: 10px 16px;
+        background-color: #db4734ff;
+        color: white;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+      `;
+      requestBtn.addEventListener("mouseenter", () => {
+        requestBtn.style.backgroundColor = "#ad3a2bff";
+        requestBtn.style.transform = "translateY(-1px)";
+      });
+      requestBtn.addEventListener("mouseleave", () => {
+        requestBtn.style.backgroundColor = "#db4734ff";
+        requestBtn.style.transform = "translateY(0)";
+      });
+
+      container.appendChild(requestBtn);
+      tasksTable.parentNode.insertBefore(container, tasksTable.nextSibling);
+
+      // Create modal (same as before)
+      const requestModal = document.createElement("div");
+      requestModal.id = "requestItemModal";
+      requestModal.className = "tc-modal";
+      requestModal.style.cssText = `
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6);
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      `;
+      requestModal.innerHTML = `
+        <div class="tc-modal__content" style="
+          background: #fff;
+          border-radius: 10px;
+          padding: 20px 25px;
+          max-width: 400px;
+          width: 90%;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+          position: relative;
+          font-family: Arial, sans-serif;
+        ">
+          <button id="closeRequestModal" class="tc-modal__close" style="
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+          ">&times;</button>
+          <h3 style="margin-bottom: 15px; color: #333;">Request for Item</h3>
+          <form id="requestItemForm" style="display:flex; flex-direction: column; gap: 12px;">
+            <label style="display:flex; flex-direction: column; font-weight: 500; color: #555;">
+              Request Type:
+              <select name="requestType" required style="
+                padding: 8px;
+                margin-top: 4px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              ">
+                <option value="">Select type</option>
+                <option value="New Item">Request a New Item</option>
+                <option value="Replacement">Request Replacement</option>
+                <option value="Repair">Request Repair</option>
+                <option value="Repair">Issue on Task Assignment</option>
+                <option value="Repair">Other Related Issue</option>
+              </select>
+            </label>
+            <label style="display:flex; flex-direction: column; font-weight: 500; color: #555;">
+              Item Name / Description:
+              <input type="text" name="itemName" required placeholder="Enter item name or description" style="
+                padding: 8px;
+                margin-top: 4px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+              " />
+            </label>
+            <label style="display:flex; flex-direction: column; font-weight: 500; color: #555;">
+              Additional Notes:
+              <textarea name="notes" placeholder="Optional notes" style="
+                padding: 8px;
+                margin-top: 4px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+                resize: vertical;
+                min-height: 60px;
+              "></textarea>
+            </label>
+            <div style="margin-top:12px; text-align:right;">
+              <button type="submit" class="submit-btn" style="
+                padding: 8px 14px;
+                background-color: #2ecc71;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                transition: background-color 0.3s ease;
+              ">Submit Request</button>
+            </div>
+          </form>
+        </div>
+      `;
+      document.body.appendChild(requestModal);
+
+      // Open modal
+      requestBtn.addEventListener("click", () => {
+        requestModal.style.display = "flex";
+      });
+
+      // Close modal
+      document.getElementById("closeRequestModal").addEventListener("click", () => {
+        requestModal.style.display = "none";
+      });
+
+      // Submit form
+      document.getElementById("requestItemForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const type = form.requestType.value;
+        const name = form.itemName.value.trim();
+        const notes = form.notes.value.trim();
+
+        if (!type || !name) return alert("Please fill all required fields.");
+
+        try {
+          const user = firebase.auth().currentUser;
+          if (!user) throw new Error("User not logged in");
+
+          await firebase.firestore().collection("tickets").add({
+            item: name,
+            concern: type,
+            notes: notes,
+            status: "Pending",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            createdBy: user.uid,
+            assignedTo: null,
+          });
+
+          requestModal.style.display = "none";
+          form.reset();
+
+          alert("✅ Request submitted successfully!");
+        } catch (err) {
+          console.error("Error submitting request:", err);
+          alert("❌ Failed to submit request. Check console.");
+        }
+      });
+    })();
+
+    // ==============================
     // My Assigned Tasks Table
     // ==============================
     ticketsCollection
@@ -526,3 +697,22 @@
     }
   }
 })();
+
+function syncMaintenanceHeight() {
+  const leftBox = document.querySelector(".tasks-left");
+  const wrapper = document.querySelector(".maintenance-table-wrapper");
+  if (leftBox && wrapper) {
+    wrapper.style.height = leftBox.offsetHeight + "px";
+  }
+}
+
+window.addEventListener("load", syncMaintenanceHeight);
+window.addEventListener("resize", syncMaintenanceHeight);
+
+// Re-sync after tables render
+const tasksTableBody = document.getElementById("tasksTableBody");
+if (tasksTableBody) {
+  const observer = new MutationObserver(syncMaintenanceHeight);
+  observer.observe(tasksTableBody, { childList: true, subtree: true });
+}
+

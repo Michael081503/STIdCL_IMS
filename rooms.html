@@ -6,18 +6,20 @@
   <title>Rooms</title>
   <link rel="stylesheet" href="rooms.css" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="layout">
 
-    <!-- LEFT-CENTER: Tables + Graph -->
     <div class="left-center-panel">
 
-      <!-- ROW: Rooms + Items Tables -->
+      <div class="calendar-panel">
+        <div class="table-header">Calendar</div>
+        <div id="calendarContainer"></div>
+      </div>
+
       <div class="tables-row">
-        <!-- LEFT: Rooms Table -->
+
         <div class="left-panel">
           <div class="table-header">Rooms</div>
           <div class="rooms-table-wrapper">
@@ -35,7 +37,6 @@
           </div>
         </div>
 
-        <!-- CENTER: Items Table -->
         <div class="center-panel">
           <div class="table-header">Items in Room</div>
           <div class="items-table-wrapper">
@@ -53,9 +54,9 @@
             </table>
           </div>
         </div>
+
       </div>
 
-      <!-- GRAPH -->
       <div class="graph-panel">
         <div class="graph-wrapper">
           <div class="table-header">Items added this month</div>
@@ -67,7 +68,6 @@
 
     </div>
 
-    <!-- RIGHT: Items Overview -->
     <div class="right-panel stats-panel">
       <div class="table-header">Items Overview</div>
       <div class="stats-wrapper">
@@ -79,7 +79,72 @@
 
   </div>
 
-  <!-- Firebase Logic -->
+  <div id="itemDetailsModal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <span id="closeItemDetails" class="modal-close">&times;</span>
+      <h2 id="details-name"></h2>
+      <img id="details-image" src="" alt="Item Image" style="width:100%;max-height:250px;object-fit:contain;margin-top:10px;border:1px solid #ddd;border-radius:8px;">
+      <div class="modal-info">
+        <p><strong>Location:</strong> <span id="details-location"></span></p>
+        <p><strong>Condition:</strong> <span id="details-condition"></span></p>
+        <p><strong>Date Added:</strong> <span id="details-date"></span></p>
+      </div>
+      <a id="openFullPage" href="#" target="_blank" class="modal-btn">🔗 Open Full Item Page</a>
+    </div>
+  </div>
+
   <script type="module" src="rooms.js?v=999"></script>
+
+  <script>
+    function renderCalendar(maintenanceDates = []) {
+      const container = document.getElementById('calendarContainer');
+      container.innerHTML = '';
+
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement('div');
+        container.appendChild(emptyCell);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('div');
+        cell.classList.add('calendar-day');
+        cell.textContent = day;
+
+        const cellDateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        if (maintenanceDates.includes(cellDateStr)) {
+          cell.classList.add('has-maintenance');
+        }
+
+        if (day === now.getDate() && month === now.getMonth() && year === now.getFullYear()) {
+          cell.classList.add('today');
+        }
+
+        container.appendChild(cell);
+      }
+    }
+
+    renderCalendar([
+      '2025-11-18',
+      '2025-11-20',
+      '2025-11-25'
+    ]);
+  </script>
+
+
+  <script>
+    // Prevent scrolling above 200px
+    window.addEventListener('scroll', function() {
+      if (window.scrollY < 200) {
+        window.scrollTo(0, 200);
+      }
+    });
+  </script>
 </body>
 </html>

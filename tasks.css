@@ -1,6 +1,6 @@
 /* ============================
    GLOBAL LAYOUT
-   ============================ */
+============================ */
 .tasks-layout {
   display: flex;
   justify-content: center;
@@ -14,7 +14,7 @@
 
 /* ============================
    SHARED BOX DESIGN
-   ============================ */
+============================ */
 .tasks-box {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
@@ -23,19 +23,9 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  overflow: hidden;
 }
 
-.tasks-left {
-  flex: 2;
-  min-width: 600px;
-}
-
-.tasks-right {
-  flex: 1;
-  min-width: 350px;
-}
-
-/* Reset any unexpected spacing */
 .tasks-box h2 {
   margin: 0 0 10px 0;
   padding: 0;
@@ -49,9 +39,38 @@
   font-size: 0.95rem;
 }
 
+.tasks-left {
+  flex: 2;
+  min-width: 600px;
+}
+
+.tasks-right {
+  flex: 1;
+  min-width: 350px;
+  max-height: 600px; /* dynamically adjusted via JS */
+  overflow-y: auto;
+  scrollbar-width: thin; /* Firefox */
+}
+
+/* ============================
+   SCROLLBAR STYLING
+============================ */
+.tasks-right::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tasks-right::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+
+.tasks-right::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 /* ============================
    TABLE STYLING
-   ============================ */
+============================ */
 .tasks-table,
 .maintenance-table {
   width: 100%;
@@ -61,12 +80,6 @@
   overflow: hidden;
   font-size: 0.9rem;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
-}
-
-.tasks-table thead,
-.maintenance-table thead {
-  background: #2D3E50;
-  color: #fff;
 }
 
 .tasks-table th,
@@ -90,8 +103,22 @@
 }
 
 /* ============================
+   STICKY TABLE HEADER
+============================ */
+.tasks-table thead th,
+.maintenance-table thead th,
+.tasks-right table thead {
+  position: sticky;
+  top: 0;
+  background-color: #2D3E50;
+  color: #fff !important;
+  font-weight: 600;
+  z-index: 2;
+}
+
+/* ============================
    STATUS BADGES
-   ============================ */
+============================ */
 .status-badge {
   display: inline-block;
   padding: 5px 12px;
@@ -102,6 +129,7 @@
   text-transform: capitalize;
   white-space: nowrap;
 }
+
 .status-badge.pending { background-color: #f59e0b; }
 .status-badge.assigned { background-color: #2563eb; }
 .status-badge.in-progress { background-color: #f97316; }
@@ -111,10 +139,16 @@
 .status-badge.review { background-color: #eab308; }
 .status-badge.solved { background-color: #22c55e; }
 .status-badge.unsolved { background-color: #ef4444; }
+.status-badge.urgent {
+  background-color: #dc2626;
+  color: #fff;
+  font-weight: bold;
+  animation: pulse 1s infinite alternate;
+}
 
 /* ============================
    BUTTONS & ICONS
-   ============================ */
+============================ */
 .submit-btn {
   background-color: #2563eb;
   color: #fff;
@@ -132,7 +166,6 @@
 .submit-btn:disabled {
   background-color: #9ca3af;
   cursor: not-allowed;
-  transform: none;
   opacity: 0.8;
 }
 
@@ -150,8 +183,8 @@
 }
 
 /* ============================
-   MODAL
-   ============================ */
+   MODALS
+============================ */
 .tc-modal {
   display: none;
   position: fixed;
@@ -161,6 +194,7 @@
   justify-content: center;
   z-index: 1000;
 }
+
 .tc-modal__content {
   background: #fff;
   padding: 25px;
@@ -172,6 +206,7 @@
   color: #000;
   text-align: center;
 }
+
 .tc-modal__close {
   position: absolute;
   right: 12px;
@@ -182,93 +217,36 @@
   cursor: pointer;
   color: #666;
 }
-.tc-modal__close:hover {
-  color: #000;
-}
+.tc-modal__close:hover { color: #000; }
 
 /* ============================
    HIGHLIGHT NEAR-DUE
-   ============================ */
+============================ */
 .due-soon td {
   background-color: #fee2e2 !important;
   color: #b91c1c;
   font-weight: 600;
 }
 
-/* Prevent margin-collapse at the top of each white box */
-.tasks-box {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;       
-}
-
-.tasks-box::before {      
-  content: "";
-  display: table;
-}
-
-#loadingText {
-  display: none; 
-  margin: 0;
-  padding: 0;
-}
-
 /* ============================
-   TABLE HEADER TEXT COLOR FIX
-   ============================ */
-.tasks-table thead th,
-.maintenance-table thead th {
-  color: #ffffff !important;
-  background-color: #2D3E50 !important; 
-  font-weight: 600;
-}
-
-/* ============================ */
-/* Finish Modal
-/* ============================ */
+   CLICKABLE ITEMS
+============================ */
 .clickable-item {
-  color: #2563eb;              
+  color: #2563eb;
   cursor: pointer;
   font-weight: 600;
-  text-decoration: underline;  
+  text-decoration: underline;
   transition: all 0.2s ease;
 }
-
 .clickable-item:hover {
-  color: #1e3a8a;             
-  text-shadow: 0 0 6px rgba(37, 99, 235, 0.4); 
-  transform: scale(1.05);   
-}
-
-#itemInfoModal .tc-modal__content {
-  max-width: 420px;         
-  padding: 18px 22px;  
-  font-size: 0.9rem;        
-  line-height: 1.4;
-}
-#itemInfoModal h3 {
-  font-size: 1.1rem;       
-  margin-bottom: 10px;
-  color: #1f2937;          
-}
-#itemInfoDetails p {
-  margin: 4px 0;           
-  font-size: 0.88rem;
-  color: #333;
-}
-#finishMaintenanceBtn {
-  margin-top: 10px;
-  padding: 6px 12px;
-  font-size: 0.85rem;
+  color: #1e3a8a;
+  text-shadow: 0 0 6px rgba(37, 99, 235, 0.4);
+  transform: scale(1.05);
 }
 
 /* ============================
    TRACKING BADGES
-   ============================ */
+============================ */
 .tracking-badge {
   display: inline-block;
   padding: 4px 10px;
@@ -278,18 +256,12 @@
   color: #fff;
   white-space: nowrap;
 }
-.tracking-badge-urgent {
-  background-color: #dc2626; /* red */
-  color: #fff;
-  font-weight: bold;
-  animation: pulse 1s infinite alternate;
-}
-.status-badge.urgent {
-  background-color: #dc2626; 
-  color: #fff;
-  font-weight: bold;
-  animation: pulse 1s infinite alternate;
-}
+
+.tracking-badge-urgent { background-color: #dc2626; animation: pulse 1s infinite alternate; }
+.tracking-badge-green { background-color: #16a34a; }
+.tracking-badge-orange { background-color: #f97316; }
+.tracking-badge-red { background-color: #dc2626; }
+.tracking-badge-gray { background-color: #9ca3af; }
 
 .disabled-btn {
   opacity: 0.6;
@@ -298,27 +270,99 @@
   transition: 0.3s;
 }
 
+/* ============================
+   KEYFRAMES
+============================ */
 @keyframes pulse {
   from { transform: scale(1); opacity: 1; }
   to { transform: scale(1.05); opacity: 0.8; }
 }
-@keyframes pulse {
-  from { transform: scale(1); opacity: 1; }
-  to { transform: scale(1.05); opacity: 0.8; }
+
+/* ============================
+   LOADING TEXT
+============================ */
+#loadingText {
+  display: none;
+  margin: 0;
+  padding: 0;
 }
 
-.tracking-badge-green {
-  background-color: #16a34a; /* green */
+/* ============================
+   ITEM MODAL
+============================ */
+#itemInfoModal .tc-modal__content {
+  max-width: 420px;
+  padding: 18px 22px;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
-.tracking-badge-orange {
-  background-color: #f97316; /* orange */
+#itemInfoModal h3 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: #1f2937;
 }
 
-.tracking-badge-red {
-  background-color: #dc2626; /* red */
+#itemInfoDetails p {
+  margin: 4px 0;
+  font-size: 0.88rem;
+  color: #333;
 }
 
-.tracking-badge-gray {
-  background-color: #9ca3af; /* gray for N/A */
+#finishMaintenanceBtn {
+  margin-top: 10px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+/* Make the wrapper keep the box layout */
+.maintenance-table-wrapper {
+  border-radius: 12px;
+  overflow: hidden; /* clip anything outside */
+  max-height: 600px; /* max height of right box */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+}
+
+/* Make tbody scrollable */
+.maintenance-table tbody {
+  display: block;
+  max-height: 500px; /* initial scrollable height */
+  overflow-y: auto;
+}
+
+/* Keep header fixed and aligned */
+.maintenance-table thead,
+.maintenance-table thead tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed; /* keeps columns aligned */
+}
+
+.maintenance-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed; /* keeps columns aligned */
+}
+
+.maintenance-table tbody {
+  scrollbar-width: thin;
+}
+
+.maintenance-table tbody::-webkit-scrollbar {
+  width: 8px;
+}
+
+.maintenance-table tbody::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+
+.maintenance-table tbody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.maintenance-table td span.tracking-badge {
+  display: inline-block; /* make it respect text-align */
+  text-align: center;
+  min-width: 60px; /* optional: keeps badge widths consistent */
 }

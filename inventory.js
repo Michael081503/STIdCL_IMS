@@ -462,7 +462,7 @@ async function showTrashModal() {
 }
 
 /* -------------------------
-   Add Item with Categories + Locations
+   Add Item with Categories + Locations (Multiple Items Support)
 ------------------------- */
 function showAddItemForm() {
   const overlay = document.createElement("div");
@@ -487,6 +487,9 @@ function showAddItemForm() {
         <option value="Others">Others</option>
       </select>
 
+      <label>Quantity:</label>
+      <input type="number" id="item-quantity" min="1" value="1" style="width:60px;" disabled />
+
       <label>Location:</label>
       <input type="text" id="item-lab" placeholder="Select building first" disabled required />
       <select id="building-select" required>
@@ -510,7 +513,7 @@ function showAddItemForm() {
       <label>Item Image (optional):</label>
       <input type="file" id="item-image" accept="image/*" />
 
-      <button type="submit">➕ Add Item</button>
+      <button type="submit">➕ Add Item(s)</button>
       <button type="button" id="close-modal-btn">Cancel</button>
     </form>
   `;
@@ -518,15 +521,29 @@ function showAddItemForm() {
   document.body.appendChild(overlay);
 
   const nameInput = modal.querySelector("#item-name");
+  const quantityInput = modal.querySelector("#item-quantity");
   const labInput = modal.querySelector("#item-lab");
   const categorySelect = modal.querySelector("#item-category");
   const buildingSelect = modal.querySelector("#building-select");
 
-  // Category selection (sub-modal with icons)
+  // ---------------------------
+  // Enable quantity once name is filled
+  // ---------------------------
+  function enableQuantityIfNameFilled() {
+    quantityInput.disabled = !(nameInput.value.trim() || nameInput.dataset.value);
+  }
+
+  nameInput.addEventListener("input", enableQuantityIfNameFilled);
+
+  // ---------------------------
+  // Category selection → Sub-modal with icons
+  // ---------------------------
   categorySelect.addEventListener("change", () => {
     let category = categorySelect.value.trim();
     nameInput.value = "";
     delete nameInput.dataset.value;
+    quantityInput.value = 1;
+    enableQuantityIfNameFilled();
 
     nameInput.disabled = true;
     nameInput.placeholder = "Select from list...";
@@ -537,6 +554,7 @@ function showAddItemForm() {
       nameInput.disabled = false;
       nameInput.placeholder = "Enter item name manually...";
       nameInput.focus();
+      enableQuantityIfNameFilled();
       return;
     }
 
@@ -585,7 +603,7 @@ function showAddItemForm() {
     const options = optionsMap[category] || [];
     if (options.length === 0) return;
 
-    // build sub-modal
+    // Sub-modal
     const subOverlay = document.createElement("div");
     subOverlay.className = "modal-overlay";
 
@@ -622,45 +640,12 @@ function showAddItemForm() {
         btn.innerHTML = `${opt.icon} ${opt.name}`;
 
         btn.addEventListener("click", () => {
-        subOverlay.remove();
-
-        // Create a small modal for brand input
-        const brandOverlay = document.createElement("div");
-        brandOverlay.className = "modal-overlay";
-
-        const brandModal = document.createElement("div");
-        brandModal.className = "modal modal--small";
-        brandModal.innerHTML = `
-          <h3>Specifications for "${opt.name}"</h3>
-          <input type="text" id="brand-input" placeholder="e.g., Acer, Samsung, Logitech" 
-                style="padding:8px; width:80%; border-radius:6px; border:1px solid #ccc; font-size:14px; margin-top:10px;">
-          <div style="margin-top:15px;">
-            <button id="brand-confirm" style="background-color:#2563eb;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">OK</button>
-            <button id="brand-cancel" style="margin-left:10px;background-color:#6b7280;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;">Cancel</button>
-          </div>
-        `;
-        brandOverlay.appendChild(brandModal);
-        document.body.appendChild(brandOverlay);
-
-        const confirmBtn = brandModal.querySelector("#brand-confirm");
-        const cancelBtn = brandModal.querySelector("#brand-cancel");
-        const brandInput = brandModal.querySelector("#brand-input");
-
-        brandInput.focus();
-
-        confirmBtn.addEventListener("click", () => {
-          const brand = brandInput.value.trim() || "Unknown";
-          nameInput.value = `${opt.name} (${brand})`;
-          nameInput.dataset.value = `${opt.name} (${brand})`;
+          subOverlay.remove();
+          nameInput.value = opt.name;
+          nameInput.dataset.value = opt.name;
           nameInput.disabled = true;
-          brandOverlay.remove();
+          enableQuantityIfNameFilled();
         });
-
-        cancelBtn.addEventListener("click", () => {
-          brandOverlay.remove();
-        });
-      });
-
 
         cell.appendChild(btn);
         row.appendChild(cell);
@@ -673,9 +658,10 @@ function showAddItemForm() {
 
     subModal.querySelector("#sub-close").addEventListener("click", () => subOverlay.remove());
   });
-  //========================================//
-  // Building selection → Location sub-modal//
-  //========================================//
+
+  // ---------------------------
+  // Building → Lab selection (unchanged)
+  // ---------------------------
   buildingSelect.addEventListener("change", () => {
     const building = buildingSelect.value;
     labInput.value = "";
@@ -696,14 +682,14 @@ function showAddItemForm() {
     let options = [];
     if (building === "Main Building") {
       options = [
-        "Laboratory 1", "Laboratory 2", "Laboratory 3", "Laboratory 4",
-        "Room 201", "Room 202", "Room 203", "Room 204",
-        "Room 401", "Room 402", "Room 403", "Library", "Faculty", "Tech Lab", "Basement 1", "Basement 2"
+        "Laboratory 1","Laboratory 2","Laboratory 3","Laboratory 4",
+        "Room 201","Room 202","Room 203","Room 204",
+        "Room 401","Room 402","Room 403","Library","Faculty","Tech Lab","Basement 1","Basement 2"
       ];
     } else if (building === "Annex") {
-      options = ["Room 201", "Room 202", "Room 203", "Room 204", "Auditorium"];
+      options = ["Room 201","Room 202","Room 203","Room 204","Auditorium"];
     } else if (building === "Pool Side") {
-      options = ["FH 101", "FH 102", "FH 103", "FH 104"];
+      options = ["FH 101","FH 102","FH 103","FH 104"];
     }
 
     const subOverlay = document.createElement("div");
@@ -753,16 +739,21 @@ function showAddItemForm() {
     subModal.querySelector("#sub-close-lab").addEventListener("click", () => subOverlay.remove());
   });
 
+  // ---------------------------
+  // Close modal
+  // ---------------------------
+  modal.querySelector("#close-modal-btn").addEventListener("click", () => overlay.remove());
 
-    modal.querySelector("#close-modal-btn").addEventListener("click", () => overlay.remove());
-
-    modal.querySelector("#add-item-form").addEventListener("submit", async e => {
+  // ---------------------------
+  // Form submission → Add multiple items
+  // ---------------------------
+  modal.querySelector("#add-item-form").addEventListener("submit", async e => {
     e.preventDefault();
 
-    // ✅ Use .value if manually typed, or .dataset.value if chosen
     const name = nameInput.value.trim() || nameInput.dataset.value || "";
     const lab = labInput.value.trim() || labInput.dataset.value || "";
     const condition = modal.querySelector("#item-condition").value;
+    const quantity = parseInt(quantityInput.value) || 1;
 
     if (!name || !lab || !condition) {
       alert("Please fill all fields");
@@ -780,15 +771,20 @@ function showAddItemForm() {
     }
 
     try {
-      await addDoc(collection(db, "inventory"), {
-        Name: name,
-        Laboratory: lab,
-        Condition: condition,
-        "Date added": nowLocalDateTimeString(),
-        MaintenanceDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        imageURL: imageURL || ""
-      });
-      alert("✅ Item added!");
+      for (let i = 1; i <= quantity; i++) {
+        let itemName = name;
+        if (quantity > 1) itemName = `${name} (no. ${i})`;
+
+        await addDoc(collection(db, "inventory"), {
+          Name: itemName,
+          Laboratory: lab,
+          Condition: condition,
+          "Date added": nowLocalDateTimeString(),
+          MaintenanceDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          imageURL: imageURL || ""
+        });
+      }
+      alert(`✅ ${quantity} item(s) added!`);
       overlay.remove();
       fetchInventory();
     } catch (err) {
@@ -796,8 +792,8 @@ function showAddItemForm() {
       alert("❌ Failed to add.");
     }
   });
+}
 
-  }
 
 /* -------------------------
    QR Modal
