@@ -704,3 +704,9 @@ body:not(.firebase-initialized) .side-nav {
   animation: notif-pop-out 0.35s ease forwards;
   overflow: hidden;
 }
+
+/* REMOVE THIS PARA MA ENABLE YUNG "REGISTER" FUNCTION */ 
+#toggle-register,
+#register-btn {
+  display: none !important;
+}
