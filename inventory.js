@@ -462,7 +462,7 @@ async function showTrashModal() {
 }
 
 /* -------------------------
-   Add Item with Categories + Locations (Multiple Items Support)
+   Add Item with Categories + Locations + Optional Purchase Info
 ------------------------- */
 function showAddItemForm() {
   const overlay = document.createElement("div");
@@ -471,52 +471,61 @@ function showAddItemForm() {
   const modal = document.createElement("div");
   modal.className = "modal";
   modal.innerHTML = `
-    <h2>Add New Inventory Item</h2>
-    <form id="add-item-form">
-      <label>Name:</label>
-      <input type="text" id="item-name" placeholder="Select category first" disabled required />
-      <select id="item-category" required>
-        <option value="">Select Category</option>
-        <option value="Computers">Computers</option>
-        <option value="Electronics">Electronics</option>
-        <option value="Appliances">Appliances</option>
-        <option value="Facility">Facility</option>
-        <option value="Furniture">Furniture</option>
-        <option value="Equipments">Equipments</option>
-        <option value="Kitchen">Kitchen</option>
-        <option value="Others">Others</option>
-      </select>
+  <h2>Add New Inventory Item</h2>
+  <form id="add-item-form">
+    <label>Name:</label>
+    <input type="text" id="item-name" placeholder="Select category first" disabled required />
 
-      <label>Quantity:</label>
-      <input type="number" id="item-quantity" min="1" value="1" style="width:60px;" disabled />
+    <label>Category:</label>
+    <select id="item-category" required>
+      <option value="">Select Category</option>
+      <option value="Computers">Computers</option>
+      <option value="Electronics">Electronics</option>
+      <option value="Appliances">Appliances</option>
+      <option value="Facility">Facility</option>
+      <option value="Furniture">Furniture</option>
+      <option value="Equipments">Equipments</option>
+      <option value="Kitchen">Kitchen</option>
+      <option value="Others">Others</option>
+    </select>
 
-      <label>Location:</label>
-      <input type="text" id="item-lab" placeholder="Select building first" disabled required />
-      <select id="building-select" required>
-        <option value="">Select Building</option>
-        <option value="Main Building">Main Building</option>
-        <option value="Pool Side">Pool Side</option>
-        <option value="Annex">Annex</option>
-        <option value="Others">Others</option>
-      </select>
+    <label>Quantity:</label>
+    <input type="number" id="item-quantity" min="1" value="1" style="width:60px;" disabled />
 
-      <label>Condition:</label>
-      <select id="item-condition" required>
-        <option value="">Select Condition</option>
-        <option>New</option>
-        <option>Good</option>
-        <option>Damaged</option>
-        <option>For Maintenance</option>
-        <option>For Replacement</option>
-      </select>
+    <label>Location:</label>
+    <input type="text" id="item-lab" placeholder="Select building first" disabled required />
+    <select id="building-select" required>
+      <option value="">Select Building</option>
+      <option value="Main Building">Main Building</option>
+      <option value="Pool Side">Pool Side</option>
+      <option value="Annex">Annex</option>
+      <option value="Others">Others</option>
+    </select>
 
-      <label>Item Image (optional):</label>
-      <input type="file" id="item-image" accept="image/*" />
+    <label>Condition:</label>
+    <select id="item-condition" required>
+      <option value="">Select Condition</option>
+      <option>New</option>
+      <option>Good</option>
+      <option>Damaged</option>
+      <option>For Maintenance</option>
+      <option>For Replacement</option>
+    </select>
 
-      <button type="submit">➕ Add Item(s)</button>
-      <button type="button" id="close-modal-btn">Cancel</button>
-    </form>
-  `;
+    <!-- OPTIONAL FIELDS BELOW -->
+    <label style="opacity:0.75;">Purchase Date (Optional):</label>
+    <input type="date" id="purchase-date" style="opacity:0.85;" />
+
+    <label style="opacity:0.75;">Purchase Cost (Optional):</label>
+    <input type="number" id="purchase-cost" placeholder="₱" step="0.01" min="0" style="opacity:0.85;" />
+
+    <label>Item Image (optional):</label>
+    <input type="file" id="item-image" accept="image/*" />
+
+    <button type="submit">➕ Add Item(s)</button>
+    <button type="button" id="close-modal-btn">Cancel</button>
+  </form>
+`;
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 
@@ -526,18 +535,13 @@ function showAddItemForm() {
   const categorySelect = modal.querySelector("#item-category");
   const buildingSelect = modal.querySelector("#building-select");
 
-  // ---------------------------
   // Enable quantity once name is filled
-  // ---------------------------
   function enableQuantityIfNameFilled() {
     quantityInput.disabled = !(nameInput.value.trim() || nameInput.dataset.value);
   }
-
   nameInput.addEventListener("input", enableQuantityIfNameFilled);
 
-  // ---------------------------
-  // Category selection → Sub-modal with icons
-  // ---------------------------
+  // Category → Sub modal picker
   categorySelect.addEventListener("change", () => {
     let category = categorySelect.value.trim();
     nameInput.value = "";
@@ -603,7 +607,6 @@ function showAddItemForm() {
     const options = optionsMap[category] || [];
     if (options.length === 0) return;
 
-    // Sub-modal
     const subOverlay = document.createElement("div");
     subOverlay.className = "modal-overlay";
 
@@ -625,7 +628,6 @@ function showAddItemForm() {
     document.body.appendChild(subOverlay);
 
     const subOptions = subModal.querySelector("#sub-options");
-    subOptions.innerHTML = "";
     const table = document.createElement("table");
     table.className = "inventory-table";
     const tbody = document.createElement("tbody");
@@ -655,13 +657,10 @@ function showAddItemForm() {
 
     table.appendChild(tbody);
     subOptions.appendChild(table);
-
     subModal.querySelector("#sub-close").addEventListener("click", () => subOverlay.remove());
   });
 
-  // ---------------------------
-  // Building → Lab selection (unchanged)
-  // ---------------------------
+  // Building → Lab picker
   buildingSelect.addEventListener("change", () => {
     const building = buildingSelect.value;
     labInput.value = "";
@@ -710,7 +709,6 @@ function showAddItemForm() {
     document.body.appendChild(subOverlay);
 
     const labOptions = subModal.querySelector("#lab-options");
-    labOptions.innerHTML = "";
     const table = document.createElement("table");
     table.className = "inventory-table";
     const tbody = document.createElement("tbody");
@@ -722,11 +720,13 @@ function showAddItemForm() {
         const btn = document.createElement("button");
         btn.className = "item-choice-btn";
         btn.textContent = opt;
+
         btn.addEventListener("click", () => {
           labInput.value = `${building} (${opt})`;
           labInput.dataset.value = `${building} (${opt})`;
           subOverlay.remove();
         });
+
         cell.appendChild(btn);
         row.appendChild(cell);
       });
@@ -735,17 +735,14 @@ function showAddItemForm() {
 
     table.appendChild(tbody);
     labOptions.appendChild(table);
-
     subModal.querySelector("#sub-close-lab").addEventListener("click", () => subOverlay.remove());
   });
 
-  // ---------------------------
-  // Close modal
-  // ---------------------------
+  // Close button
   modal.querySelector("#close-modal-btn").addEventListener("click", () => overlay.remove());
 
   // ---------------------------
-  // Form submission → Add multiple items
+  // Form submission with Firestore + Optional Fields
   // ---------------------------
   modal.querySelector("#add-item-form").addEventListener("submit", async e => {
     e.preventDefault();
@@ -755,11 +752,18 @@ function showAddItemForm() {
     const condition = modal.querySelector("#item-condition").value;
     const quantity = parseInt(quantityInput.value) || 1;
 
+    // New optional fields
+    const purchaseDate = modal.querySelector("#purchase-date").value || null;
+    const purchaseCost = modal.querySelector("#purchase-cost").value
+      ? Number(modal.querySelector("#purchase-cost").value)
+      : null;
+
     if (!name || !lab || !condition) {
-      alert("Please fill all fields");
+      alert("Please fill all required fields");
       return;
     }
 
+    // Upload image if exists
     const fileInput = modal.querySelector("#item-image");
     let imageURL = "";
 
@@ -780,10 +784,13 @@ function showAddItemForm() {
           Laboratory: lab,
           Condition: condition,
           "Date added": nowLocalDateTimeString(),
-          MaintenanceDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          imageURL: imageURL || ""
+          MaintenanceDueDate: new Date(Date.now() + 30 * 86400000).toISOString(),
+          imageURL: imageURL || "",
+          PurchaseDate: purchaseDate,
+          PurchaseCost: purchaseCost
         });
       }
+
       alert(`✅ ${quantity} item(s) added!`);
       overlay.remove();
       fetchInventory();
@@ -793,7 +800,6 @@ function showAddItemForm() {
     }
   });
 }
-
 
 /* -------------------------
    QR Modal

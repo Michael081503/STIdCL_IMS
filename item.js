@@ -52,6 +52,10 @@ async function loadItemDetails() {
     conditionEl.className = `condition-badge ${safeClass || 'unknown'}`;
 
     document.getElementById("item-date").textContent = data["Date added"] || "N/A";
+    document.getElementById("item-purchase-date").textContent = data.purchaseDate || "N/A";
+    document.getElementById("item-purchase-cost").textContent = data.purchaseCost 
+      ? `₱ ${parseFloat(data.purchaseCost).toLocaleString()}`
+      : "N/A";
 
     // Load and display item image (supports both full URLs and Firebase paths)
     const imgEl = document.getElementById("item-image");
